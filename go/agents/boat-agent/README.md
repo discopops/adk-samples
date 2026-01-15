@@ -1,11 +1,18 @@
 # Boat Agent
 
-This is a simple sailboat information agent built using the [Agent Developer Kit
-(ADK)](https://github.com/google/adk). It uses the Gemini model to gather and
+This is a simple sailboat information agent built using the [Agent Development Kit
+(ADK)](https://google.github.io/adk-docs/). It uses the Gemini model to gather and
 format technical specifications for sailboats, such as length, beam, draft, and
 mast height. It also forces the output to be json, for consumption by another
 application.  This pattern allows for this agent to be incorporated into a REST
 based applicaiton. 
+
+
+<figure>
+  <img src="demo.gif" alt="Demo">
+  <figcaption>Example of the agent encorporated into a traditional web form.</figcaption>
+</figure>
+
 
 ## Features
 
