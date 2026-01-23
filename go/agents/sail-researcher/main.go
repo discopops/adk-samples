@@ -8,7 +8,6 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-	"sync"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -58,8 +57,6 @@ func main() {
 
 type Server struct {
 	config *config.Config
-	mu     sync.Mutex
-
 	providers []Provider
 }
 

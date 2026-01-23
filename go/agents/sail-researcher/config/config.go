@@ -4,6 +4,12 @@ import (
 	"fmt"
 )
 
+const (
+	DefaultModelName = "gemini-2.0-flash-001"
+	DefaultPort      = "8081"
+	DefaultEnv       = "development"
+)
+
 type Config struct {
 	Env          string
 	Project      string
@@ -21,7 +27,7 @@ func New(getEnv func(string) string) (*Config, error) {
 
 	modelName := getEnv("MODEL")
 	if modelName == "" {
-		modelName = "gemini-2.0-flash-001"
+		modelName = DefaultModelName
 	}
 
 	geminiKey := getEnv("GEMINI_API_KEY")
@@ -31,12 +37,12 @@ func New(getEnv func(string) string) (*Config, error) {
 
 	port := getEnv("PORT")
 	if port == "" {
-		port = "8081"
+		port = DefaultPort
 	}
 
 	env := getEnv("ENV")
 	if env == "" {
-		env = "development"
+		env = DefaultEnv
 	}
 
 	project := getEnv("GOOGLE_CLOUD_PROJECT")

@@ -12,7 +12,7 @@ func TestCreateResearcherAgent(t *testing.T) {
 	// Use a mock model if possible, or just check configuration
 	// For now, let's see if it instantiates without error (requires API key if real)
 
-	modelName := "gemini-2.0-flash-001"
+	modelName := config.DefaultModelName
 	apiKey := os.Getenv("GEMINI_API_KEY")
 	if apiKey == "" {
 		t.Skip("Skipping agent creation test because GEMINI_API_KEY is not set")

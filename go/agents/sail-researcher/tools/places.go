@@ -140,7 +140,7 @@ func (p *PlacesProvider) FindPlaces(ctx tool.Context, args PlacesArgs) (PlacesRe
 
 	placesList := resp.Places
 
-	var results []PlaceResult
+	results := make([]PlaceResult, 0)
 	for _, pt := range placesList {
 		lat := 0.0
 		lng := 0.0
