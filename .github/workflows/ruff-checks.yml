@@ -2,52 +2,41 @@ name: ✅ Checks
 
 on:
   pull_request:
-    # Trigger on any PR to ensure all code is standard
     branches: ["main"]
-    # Optimization: Only run if Python or config files change
     paths:
       - "python/agents/**"
       - "pyproject.toml"
-      - ".github/workflows/checks.yml"
 
 permissions:
-  contents: write  # Required for auto-committing fixes
+  contents: read
+  pull-requests: write # Essential for posting the suggestion comments
 
 jobs:
-  ruff-lint-and-format:
-    name: Ruff Lint & Format
+  ruff-format-suggestions:
+    name: Ruff Format & Lint Suggestions
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      # FIX: Use the official setup action instead of a curl script
       - name: Install uv
         uses: astral-sh/setup-uv@v5
         with:
-          # This also handles Python installation for you
           python-version: "3.13"
-          enable-cache: true
 
-      - name: Run Ruff Format
-        run: uvx ruff format .
-
-      - name: Run Ruff Check WITHOUT Fix
-        # Running with --fix will resolve the ruff errors automatically
-        run: uvx ruff check --fix .
-
-      - name: Commit and Push Fixes
-        # This step only runs if Ruff actually changed files
-        if: github.event_name == 'pull_request'
+      # We run Ruff via Reviewdog to generate the UI suggestions
+      - name: Run Ruff and Post Suggestions
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if [ -n "$(git status --porcelain)" ]; then
-            git config --global user.name 'github-actions[bot]'
-            git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-            git add .
-            git commit -m "chore: auto-fix linting and formatting with ruff"
-            git push
-          else
-            echo "No changes detected by Ruff."
-          fi
+          # 1. Apply linting fixes and formatting to the local runner filesystem
+          uvx ruff check --fix .
+          uvx ruff format .
+
+          # 2. Use git diff to see what changed, and pipe it to reviewdog
+          # reviewdog -f=diff will turn git patches into GitHub suggestions
+          git diff | reviewdog -f=diff \
+                               -name="ruff-suggester" \
+                               -reporter=github-pr-review \
+                               -filter-mode=added \
+                               -fail-on-error=true
