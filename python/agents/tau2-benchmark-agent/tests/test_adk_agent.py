@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-from typing import AsyncGenerator
+from collections.abc import AsyncGenerator
 
 import pytest
 from google.adk.models.base_llm import BaseLlm
@@ -38,7 +38,8 @@ class MockLlm(BaseLlm):
     ) -> AsyncGenerator[LlmResponse, None]:
         if self.response_type == "tool_call":
             tool_call = types.FunctionCall(
-                name="create_task", args={"user_id": "123", "title": "Test Task"}
+                name="create_task",
+                args={"user_id": "123", "title": "Test Task"},
             )
             llm_response = LlmResponse(
                 content=types.Content(
@@ -48,7 +49,8 @@ class MockLlm(BaseLlm):
             )
         elif self.response_type == "multi_tool_call":
             tool_call_1 = types.FunctionCall(
-                name="create_task", args={"user_id": "123", "title": "Test Task 1"}
+                name="create_task",
+                args={"user_id": "123", "title": "Test Task 1"},
             )
             tool_call_2 = types.FunctionCall(name="get_users", args={})
             llm_response = LlmResponse(
@@ -86,11 +88,17 @@ def adk_agent(get_environment, request) -> AdkAgent:
 @pytest.fixture
 def first_user_message():
     """Fixture for the first user message."""
-    return UserMessage(content="Hello can you help me create a task?", role="user")
+    return UserMessage(
+        content="Hello can you help me create a task?", role="user"
+    )
 
 
 def test_adk_agent(adk_agent: AdkAgent, first_user_message: UserMessage):
     """Test case for AdkAgent."""
+
+    target_message_count = 2
+    target_tool_calls = 2
+
     agent_state = adk_agent.get_init_state()
     assert agent_state is not None
     agent_msg, agent_state = adk_agent.generate_next_message(
@@ -108,11 +116,11 @@ def test_adk_agent(adk_agent: AdkAgent, first_user_message: UserMessage):
         assert agent_msg.tool_calls[0].name == "create_task"
     elif response_type == "multi_tool_call":
         assert agent_msg.tool_calls is not None
-        assert len(agent_msg.tool_calls) == 2
+        assert len(agent_msg.tool_calls) == target_tool_calls
 
     # Check the state is updated
     assert agent_state is not None
-    assert len(agent_state.messages) == 2
+    assert len(agent_state.messages) == target_message_count
     # Check the messages are of the correct type
     assert isinstance(agent_state.messages[0], UserMessage)
     assert isinstance(agent_state.messages[1], AssistantMessage)
@@ -120,8 +128,13 @@ def test_adk_agent(adk_agent: AdkAgent, first_user_message: UserMessage):
     assert agent_state.messages[1].content == agent_msg.content
 
 
-def test_adk_agent_with_tool_call(get_environment, first_user_message: UserMessage):
+def test_adk_agent_with_tool_call(
+    get_environment, first_user_message: UserMessage
+):
     """Test case for AdkAgent with a tool call and response."""
+    
+    tool_call_count = 4
+
     # Setup agent to respond with a tool call first
     mock_llm_tool_call = MockLlm(response_type="tool_call")
     agent = AdkAgent(
@@ -155,7 +168,9 @@ def test_adk_agent_with_tool_call(get_environment, first_user_message: UserMessa
 
     # Switch mock to respond with text
     mock_llm_text = MockLlm(response_type="text")
-    agent._adk_root_agent.model = mock_llm_text  # pytype: disable=attribute-error
+    agent._adk_root_agent.model = (
+        mock_llm_text  # pytype: disable=attribute-error
+    )
 
     agent_msg_final, agent_state = agent.generate_next_message(
         tool_message, agent_state
@@ -165,7 +180,7 @@ def test_adk_agent_with_tool_call(get_environment, first_user_message: UserMessa
     assert agent_msg_final.content == "Mock response"
     assert agent_msg_final.tool_calls is None
     assert (
-        len(agent_state.messages) == 4
+        len(agent_state.messages) == tool_call_count
     )  # User, Assistant (tool call), ToolMessage, Assistant (text)
 
 
@@ -173,6 +188,10 @@ def test_adk_agent_with_multi_tool_call(
     get_environment, first_user_message: UserMessage
 ):
     """Test case for AdkAgent with multiple tool calls."""
+    
+    target_tool_call_count = 2
+    target_message_count = 5
+    
     # Setup agent to respond with multiple tool calls
     mock_llm_multi_tool_call = MockLlm(response_type="multi_tool_call")
     agent = AdkAgent(
@@ -190,7 +209,7 @@ def test_adk_agent_with_multi_tool_call(
 
     assert isinstance(agent_msg, AssistantMessage)
     assert agent_msg.tool_calls is not None
-    assert len(agent_msg.tool_calls) == 2
+    assert len(agent_msg.tool_calls) == target_tool_call_count
     tool_call_1 = agent_msg.tool_calls[0]
     tool_call_2 = agent_msg.tool_calls[1]
     assert tool_call_1.name == "create_task"
@@ -219,7 +238,9 @@ def test_adk_agent_with_multi_tool_call(
 
     # Switch mock to respond with text
     mock_llm_text = MockLlm(response_type="text")
-    agent._adk_root_agent.model = mock_llm_text  # pytype: disable=attribute-error
+    agent._adk_root_agent.model = (
+        mock_llm_text  # pytype: disable=attribute-error
+    )
 
     agent_msg_final, agent_state = agent.generate_next_message(
         multi_tool_message, agent_state
@@ -229,5 +250,5 @@ def test_adk_agent_with_multi_tool_call(
     assert agent_msg_final.content == "Mock response"
     assert agent_msg_final.tool_calls is None
     assert (
-        len(agent_state.messages) == 5
+        len(agent_state.messages) == target_message_count
     )  # System, User, Assistant (tool calls), MultiToolMessage, Assistant (text)

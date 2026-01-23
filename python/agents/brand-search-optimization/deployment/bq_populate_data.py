@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from brand_search_optimization.shared_libraries import constants
 from google.cloud import bigquery
+
+from brand_search_optimization.shared_libraries import constants
 
 PROJECT = constants.PROJECT
 TABLE_ID = constants.TABLE_ID
@@ -56,7 +57,7 @@ def create_dataset_if_not_exists():
         dataset_id, delete_contents=True, not_found_ok=True
     )  # Make an API request.
     dataset = client.create_dataset(dataset)  # Make an API request.
-    print("Created dataset {}.{}".format(client.project, dataset.dataset_id))
+    print(f"Created dataset {client.project}.{dataset.dataset_id}")
     return dataset
 
 
@@ -76,13 +77,9 @@ def populate_bigquery_table():
     table_id = f"{PROJECT}.{DATASET_ID}.{TABLE_ID}"
     table = bigquery.Table(table_id, schema=schema)
     client.delete_table(table_id, not_found_ok=True)  # Make an API request.
-    print("Deleted table '{}'.".format(table_id))
+    print(f"Deleted table '{table_id}'.")
     table = client.create_table(table)  # Make an API request.
-    print(
-        "Created table {}.{}.{}".format(
-            PROJECT, table.dataset_id, table.table_id
-        )
-    )
+    print(f"Created table {PROJECT}.{table.dataset_id}.{table.table_id}")
 
     errors = client.insert_rows_json(table=table, json_rows=data_to_insert)
 

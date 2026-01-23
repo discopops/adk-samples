@@ -14,7 +14,7 @@
 
 
 import asyncio
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 from google.adk import Agent as AdkLlmAgent
 from google.adk.agents import BaseAgent
@@ -66,10 +66,10 @@ class AdkTool(base_tool.BaseTool):
 
 def _create_agent(
     name: str,
-    model: Union[str, BaseLlm],
+    model: str | BaseLlm,
     instruction: str,
-    tools: List[Tool],
-    llm_args: Dict[str, Any],
+    tools: list[Tool],
+    llm_args: dict[str, Any],
 ) -> BaseAgent:
     """Create an ADK LLM Agent with the given parameters.
 
@@ -87,8 +87,12 @@ def _create_agent(
         AdkTool(
             types.FunctionDeclaration(
                 name=tool.openai_schema["function"]["name"],
-                description=tool.openai_schema["function"].get("description", ""),
-                parameters_json_schema=tool.openai_schema["function"]["parameters"],
+                description=tool.openai_schema["function"].get(
+                    "description", ""
+                ),
+                parameters_json_schema=tool.openai_schema["function"][
+                    "parameters"
+                ],
             )
         )
         for tool in tools
@@ -108,7 +112,9 @@ def _create_agent(
         thinking_level = llm_args["reasoning_effort"]
 
     thinking_config = types.ThinkingConfig(
-        include_thoughts=True, thinking_level=thinking_level, thinking_budget=None
+        include_thoughts=True,
+        thinking_level=thinking_level,
+        thinking_budget=None,
     )
 
     return AdkLlmAgent(
@@ -128,10 +134,10 @@ class AdkAgent(LLMAgent):
 
     def __init__(
         self,
-        tools: List[Tool],
+        tools: list[Tool],
         domain_policy: str,
-        llm: Optional[str] = None,
-        llm_args: Optional[dict] = None,
+        llm: str | None = None,
+        llm_args: dict | None = None,
     ):
         """Initialize the AdkAgent with the given parameters.
 
@@ -145,9 +151,9 @@ class AdkAgent(LLMAgent):
             tools=tools, domain_policy=domain_policy, llm=llm, llm_args=llm_args
         )
         model_name = llm or "gemini-2.5-pro"
-        assert (
-            "gemini" in model_name
-        ), "AdkAgent only supports gemini models for this benchmark."
+        assert "gemini" in model_name, (
+            "AdkAgent only supports gemini models for this benchmark."
+        )
         if model_name.startswith("vertex_ai/"):
             model_name = model_name.replace("vertex_ai/", "")
         if model_name.startswith("gemini/"):
@@ -191,8 +197,8 @@ class AdkAgent(LLMAgent):
 
     async def _run_prompt_async(
         self,
-        new_message: Optional[str],
-        function_responses: Optional[list[types.FunctionResponse]] = None,
+        new_message: str | None,
+        function_responses: list[types.FunctionResponse] | None = None,
     ) -> AssistantMessage:
         """Run the prompt asynchronously and return the assistant message.
 
@@ -210,14 +216,19 @@ class AdkAgent(LLMAgent):
         else:
             content = types.Content(
                 role="user",
-                parts=[types.Part(function_response=fr) for fr in function_responses],
+                parts=[
+                    types.Part(function_response=fr)
+                    for fr in function_responses
+                ],
             )
 
         logger.info(f"** User says: {content.model_dump(exclude_none=True)}")
         text_content = ""
         tool_calls: list[ToolCall] = []
         async for event in self._runner.run_async(
-            user_id=self._user_id, session_id=self.session.id, new_message=content
+            user_id=self._user_id,
+            session_id=self.session.id,
+            new_message=content,
         ):
             if event is None or event.content is None:
                 continue
@@ -272,17 +283,19 @@ class AdkAgent(LLMAgent):
         if getattr(self, "session", None) is None:
             try:
                 asyncio.run(self.async_setup())
-            except RuntimeError:
+            except RuntimeError as e:
                 raise RuntimeError(
                     "Cannot create ADK session: an event loop is already running."
-                )
+                ) from e
 
         if isinstance(message, UserMessage):
             assistant_message = asyncio.run(
                 self._run_prompt_async(new_message=message.content)
             )
         elif isinstance(message, ToolMessage):
-            call_id, call_name = self.pop_long_running_call_info_with_id(message.id)
+            call_id, call_name = self.pop_long_running_call_info_with_id(
+                message.id
+            )
             if not call_id or not call_name:
                 call_id, call_name = self.pop_long_running_call_info()
 
@@ -300,7 +313,9 @@ class AdkAgent(LLMAgent):
         elif isinstance(message, MultiToolMessage):
             function_responses = []
             for tm in message.tool_messages:
-                call_id, call_name = self.pop_long_running_call_info_with_id(tm.id)
+                call_id, call_name = self.pop_long_running_call_info_with_id(
+                    tm.id
+                )
                 if not call_id or not call_name:
                     call_id, call_name = self.pop_long_running_call_info()
 
@@ -317,7 +332,9 @@ class AdkAgent(LLMAgent):
                 )
             )
         else:
-            assistant_message = asyncio.run(self._run_prompt_async(new_message=""))
+            assistant_message = asyncio.run(
+                self._run_prompt_async(new_message="")
+            )
 
         state.messages.append(assistant_message)
         return assistant_message, state
@@ -339,13 +356,16 @@ class AdkAgent(LLMAgent):
           A tuple containing the call ID and call name, or None if no information
           is available.
         """
-        if hasattr(self, "long_running_call_infos") and self.long_running_call_infos:
+        if (
+            hasattr(self, "long_running_call_infos")
+            and self.long_running_call_infos
+        ):
             return self.long_running_call_infos.pop(0)
         return None
 
     def pop_long_running_call_info_with_id(
         self, call_id: str
-    ) -> Optional[tuple[str, str]]:
+    ) -> tuple[str, str] | None:
         """Pop long-running call information by call ID.
 
         Args:
@@ -355,8 +375,11 @@ class AdkAgent(LLMAgent):
           A tuple containing the call ID and call name, or None if no information
           is available.
         """
-        if hasattr(self, "long_running_call_infos") and self.long_running_call_infos:
-            for i, (stored_call_id, call_name) in enumerate(
+        if (
+            hasattr(self, "long_running_call_infos")
+            and self.long_running_call_infos
+        ):
+            for i, (stored_call_id, _call_name) in enumerate(
                 self.long_running_call_infos
             ):
                 if stored_call_id == call_id:
