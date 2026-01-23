@@ -13,5 +13,3 @@
 # limitations under the License.
 
 from .agent import podcast_transcript_writer_agent
-
-__all__ = ["podcast_transcript_writer_agent"]

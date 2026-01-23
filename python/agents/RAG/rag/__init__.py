@@ -14,11 +14,9 @@
 
 import os
 
-from . import agent
-
-__all__ = ["agent"]
-
 import google.auth
+
+from . import agent
 
 _, project_id = google.auth.default()
 os.environ.setdefault("GOOGLE_CLOUD_PROJECT", project_id)

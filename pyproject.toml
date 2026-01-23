@@ -23,6 +23,10 @@ ignore = [
     "PLR0913" # Allow agents to have many arguments if needed
 ]
 
+[tool.ruff.lint.per-file-ignores]
+# Global rule: ADK agents use __init__.py to expose their logic
+"__init__.py" = ["F401"]
+
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"

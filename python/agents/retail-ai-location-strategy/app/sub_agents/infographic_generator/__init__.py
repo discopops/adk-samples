@@ -15,5 +15,3 @@
 """Exports the infographic_generator_agent."""
 
 from .agent import infographic_generator_agent
-
-__all__ = ["infographic_generator_agent"]

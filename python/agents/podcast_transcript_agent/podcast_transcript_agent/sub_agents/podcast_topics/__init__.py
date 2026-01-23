@@ -13,5 +13,3 @@
 # limitations under the License.
 
 from .agent import podcast_topics_agent
-
-__all__ = ["podcast_topics_agent"]
