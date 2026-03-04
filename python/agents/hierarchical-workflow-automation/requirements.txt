@@ -16,7 +16,7 @@ cffi==1.17.1
 charset-normalizer==3.4.3
 click==8.2.1
 cloudpickle==3.0.0
-cryptography==45.0.7
+cryptography==46.0.5
 dataclasses-json==0.6.7
 Deprecated==1.2.18
 docstring_parser==0.17.0
@@ -30,7 +30,7 @@ google-auth==2.40.3
 google-auth-httplib2==0.2.0
 google-auth-oauthlib==1.2.2
 google-cloud==0.34.0
-google-cloud-aiplatform==1.118.0
+google-cloud-aiplatform==1.133.0
 google-cloud-appengine-logging==1.6.2
 google-cloud-audit-log==0.3.2
 google-cloud-bigquery==3.36.0
@@ -68,14 +68,14 @@ jsonschema==4.25.1
 jsonschema-specifications==2025.4.1
 langchain==0.3.27
 langchain-community==0.3.29
-langchain-core==0.3.76
+langchain-core==1.2.11
 langchain-google-vertexai==2.1.2
 langchain-text-splitters==0.3.11
 langgraph==0.3.34
 langgraph-checkpoint==2.1.1
 langgraph-prebuilt==0.1.8
 langgraph-sdk==0.1.74
-langsmith==0.4.28
+langsmith==0.6.3
 Mako==1.3.10
 Markdown==3.8.2
 MarkupSafe==3.0.2
@@ -105,7 +105,7 @@ platformdirs==4.4.0
 pluggy==1.6.0
 propcache==0.3.2
 proto-plus==1.26.1
-protobuf==6.32.0
+protobuf==6.33.5
 pyarrow==21.0.0
 pyasn1==0.6.1
 pyasn1_modules==0.4.2
@@ -133,7 +133,7 @@ six==1.17.0
 sniffio==1.3.1
 SQLAlchemy==2.0.43
 sqlalchemy-spanner==1.16.0
-sqlparse==0.5.3
+sqlparse==0.5.4
 sse-starlette==3.0.2
 starlette==0.47.3
 structlog==25.4.0
