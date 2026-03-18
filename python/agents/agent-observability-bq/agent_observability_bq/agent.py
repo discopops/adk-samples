@@ -16,28 +16,36 @@ import os
 import sys
 
 import google.auth
-from google.adk.apps import App
-from google.adk.agents import Agent
-from google.adk.plugins.bigquery_agent_analytics_plugin import BigQueryAgentAnalyticsPlugin
-from google.adk.tools.bigquery import BigQueryToolset
+
 # --- Configuration ---
 from dotenv import load_dotenv
+from google.adk.agents import Agent
+from google.adk.apps import App
+from google.adk.plugins.bigquery_agent_analytics_plugin import (
+    BigQueryAgentAnalyticsPlugin,
+)
+from google.adk.tools.bigquery import BigQueryToolset
 
 load_dotenv()
 
 # Default to Vertex AI backend (necessary for environments like Cloud Run
-# where .env files are not deployed), but allow developers to override 
+# where .env files are not deployed), but allow developers to override
 # this to "False" (AI Studio) in their local .env file.
 os.environ.setdefault("GOOGLE_GENAI_USE_VERTEXAI", "True")
 
-credentials, PROJECT_ID = google.auth.default(scopes=["https://www.googleapis.com/auth/cloud-platform"])
+credentials, PROJECT_ID = google.auth.default(
+    scopes=["https://www.googleapis.com/auth/cloud-platform"]
+)
 
 # Fallback to env var if default auth doesn't have it (e.g. some service accounts)
 if not PROJECT_ID:
     PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT")
 
 if not PROJECT_ID:
-    print("Warning: Could not determine GOOGLE_CLOUD_PROJECT from credentials or environment. Agent may fail.", file=sys.stderr)
+    print(
+        "Warning: Could not determine GOOGLE_CLOUD_PROJECT from credentials or environment. Agent may fail.",
+        file=sys.stderr,
+    )
 
 DATASET_ID = os.environ.get("BQ_ANALYTICS_DATASET_ID", "adk_agent_analytics")
 TABLE_ID = os.environ.get("BQ_ANALYTICS_TABLE_ID", "agent_events")
@@ -75,7 +83,7 @@ root_agent = Agent(
     Always format your SQL queries clearly before executing them, and explain the results plainly to the user.
     Remember to use fully qualified table names in BigQuery (project.dataset.table) if necessary.
     """,
-    tools=tools
+    tools=tools,
 )
 
 # --- Create the App ---

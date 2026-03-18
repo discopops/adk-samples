@@ -50,6 +50,7 @@ CORPUS_DESCRIPTION = "Corpus containing Alphabet's 10-K 2025 document"
 PDF_URL = "https://s206.q4cdn.com/479360582/files/doc_financials/2025/q4/GOOG-10-K-2025.pdf"
 PDF_FILENAME = "goog-10-k-2025.pdf"
 
+
 # --- Start of the script ---
 def initialize_vertex_ai():
     credentials, _ = default()
