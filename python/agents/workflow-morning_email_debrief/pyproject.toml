@@ -1,7 +1,7 @@
 [project]
-name = "workflow-concurrent_research_writer"
+name = "workflow-morning_email_debrief"
 version = "0.1.0"
-description = "Worflow agent leveraging concurrent research and routed publishing."
+description = "Worflow agent that summarizes your most recent emails every morning."
 authors = [
     { name = "Tommy Wagner", email = "wagnerthomas@google.com" }
 ]
@@ -28,10 +28,10 @@ deployment = [
 extend = "../../../pyproject.toml"
 
 [tool.ruff.lint.isort]
-known-first-party = ["workflow-concurrent_research_writer"]
+known-first-party = ["workflow-morning_email_debrief"]
 
 [tool.agent-starter-pack.settings]
-agent_directory = "workflow-concurrent_research_writer"
+agent_directory = "workflow-morning_email_debrief"
 
 [build-system]
 requires = ["hatchling"]
