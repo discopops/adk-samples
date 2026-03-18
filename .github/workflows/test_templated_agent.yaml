@@ -11,12 +11,23 @@ jobs:
     outputs:
       # The output is a JSON array of agent directories to be built, e.g., ["agents/agent-a", "agents/agent-c"]
       matrix: ${{ steps.set-matrix.outputs.matrix }}
+      is_fork: ${{ steps.check-fork.outputs.is_fork }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
+
+      - name: Check if PR is from a fork
+        id: check-fork
+        run: |
+          if [ "${{ github.event.pull_request.head.repo.full_name }}" != "${{ github.repository }}" ]; then
+            echo "is_fork=true" >> $GITHUB_OUTPUT
+            echo "⚠️ This PR is from a fork (${{ github.event.pull_request.head.repo.full_name }}). GCP-authenticated checks will be skipped."
+          else
+            echo "is_fork=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Get changed files
         id: changed_files
@@ -66,10 +77,15 @@ jobs:
           STEPS_CHANGED_FILES_OUTPUTS_ALL_CHANGED_FILES: ${{ steps.changed_files.outputs.all_changed_files }}
 
   # JOB 2: Build, test, and interact with GCP for each changed agent.
+  # This job requires GCP authentication via Workload Identity Federation,
+  # which is only available for PRs from branches within this repository
+  # (not from forks, due to GitHub Actions security restrictions).
   test-agent-template:
     name: ${{ matrix.task }} | ${{ matrix.agent_path }} (${{ matrix.deployment_target }})
     needs: discover-changed-agents
-    if: needs.discover-changed-agents.outputs.matrix != '[]'
+    if: >-
+      needs.discover-changed-agents.outputs.matrix != '[]' &&
+      needs.discover-changed-agents.outputs.is_fork != 'true'
     runs-on: ubuntu-latest
 
     # --- PERMISSIONS BLOCK FOR OIDC AUTHENTICATION ---
@@ -156,3 +172,27 @@ jobs:
               echo \"--- Unknown task: ${{ matrix.task }} ---\"
               exit 1
             fi
+
+  # JOB 3: Info-only job for fork PRs so contributors see a clear message
+  # instead of a confusing auth failure.
+  fork-pr-notice:
+    name: Fork PR Notice
+    needs: discover-changed-agents
+    if: >-
+      needs.discover-changed-agents.outputs.matrix != '[]' &&
+      needs.discover-changed-agents.outputs.is_fork == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fork PR — GCP checks skipped
+        run: |
+          echo "============================================================"
+          echo "ℹ️  This PR is from a fork."
+          echo ""
+          echo "The GCP-authenticated lint and test checks have been skipped"
+          echo "because GitHub Actions does not provide OIDC tokens to"
+          echo "workflows running on fork pull requests (this is a GitHub"
+          echo "security restriction, not a repo configuration issue)."
+          echo ""
+          echo "A maintainer will review and may re-run checks after merging"
+          echo "to a branch in this repository, or will review manually."
+          echo "============================================================"
