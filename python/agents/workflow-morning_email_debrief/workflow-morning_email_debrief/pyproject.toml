@@ -1,0 +1,84 @@
+[project]
+name = "workflow-morning_email_debrief"
+version = "0.1.0"
+description = "Summarizes the inbox of the last given number of emails."
+readme = "README.md"
+authors = [
+    { name = "Tommy Wagner", email = "wagnerthomas@google.com" },
+]
+license = { text = "Apache-2.0" }
+requires-python = ">=3.11,<3.13"
+dependencies = [
+    "google-cloud-aiplatform[adk,agent-engines]>=1.93.0",
+    "pydantic>=2.10.6",
+    "python-dotenv>=1.0.1",
+    "google-genai>=1.16.1",
+    "google-adk>=1.0.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.5",
+    "google-adk[eval]>=1.16.0",
+    "pytest-asyncio>=0.26.0",
+    "agent-starter-pack>=0.14.1",
+]
+
+deployment = [
+    "absl-py>=2.2.1",
+    "cloudpickle>=3.1.1",
+    "flake8-pyproject>=1.2.3",
+]
+
+[project.optional-dependencies]
+lint = [
+    "ruff>=0.4.6",
+    "mypy>=1.15.0",
+    "codespell>=2.2.0",
+    "types-pyyaml>=6.0.12.20240917",
+    "types-requests>=2.32.0.20240914",
+]
+
+[tool.ruff]
+extend = "../../../pyproject.toml"
+
+[tool.ruff.lint]
+ignore = ["C901", "PLR0911"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["workflow-morning_email_debrief"]
+
+[tool.mypy]
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+no_implicit_optional = true
+check_untyped_defs = true
+disallow_subclassing_any = true
+warn_incomplete_stub = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_unreachable = true
+follow_imports = "silent"
+ignore_missing_imports = true
+explicit_package_bases = true
+disable_error_code = ["misc", "no-untyped-call", "no-any-return"]
+exclude = [".venv"]
+
+[tool.codespell]
+ignore-words-list = "rouge"
+skip = "./locust_env/*,uv.lock,.venv,./frontend,**/*.ipynb"
+
+[tool.pytest.ini_options]
+pythonpath = "."
+asyncio_default_fixture_loop_scope = "function"
+
+[tool.agent-starter-pack]
+example_question = "Summarize my last 5 emails from my inbox."
+
+[tool.agent-starter-pack.settings]
+agent_directory = "workflow-morning_email_debrief"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
