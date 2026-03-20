@@ -1,0 +1,32 @@
+import logging
+import re
+import os
+from typing import AsyncGenerator, Any
+from typing_extensions import override
+
+from google.adk.agents import BaseAgent, LlmAgent, Agent
+from google.adk.events import Event
+from google.adk.planners import BuiltInPlanner
+from google.genai import types
+from .sub_agents.investigation.agent import investigation_agent
+from .sub_agents.response.agent import response_agent
+from .sub_agents.threatintel.agent import threatintel_agent
+from .sub_agents.triage.agent import triage_agent
+from .prompt import root_agent_instruction # Instruction for the orch_agent LLM persona
+
+# --- Configure Logging ---
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+root_agent = Agent(
+    model= os.getenv("MODEL_ID"),
+    name="cyber_guardian_orchestrator",
+    description="Orchestrates a multi-agent cybersecurity incident response workflow",
+    instruction=root_agent_instruction,
+    planner=BuiltInPlanner(thinking_config=types.ThinkingConfig(
+            include_thoughts=True,
+            thinking_budget=512
+        )
+    ),
+    sub_agents = [threatintel_agent, investigation_agent, triage_agent, response_agent]
+)
