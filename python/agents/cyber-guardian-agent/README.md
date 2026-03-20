@@ -78,7 +78,7 @@ The agent uses environment variables for project-specific configurations. A `.en
 GOOGLE_GENAI_USE_VERTEXAI=1
 GOOGLE_CLOUD_PROJECT="your-gcp-project-id"
 GOOGLE_CLOUD_LOCATION="your-gcp-region"
-BQ_DATASET="your-bq-dataset"
+BQ_DATASET="<your_bq_dataset>"
 MODEL_ID="model_id"
 
 ```
@@ -90,7 +90,11 @@ MODEL_ID="model_id"
 
 ### 📊 Optional: Populate BigQuery Tables
 
-If you are setting up the environment for the first time, you can populate the required BigQuery tables using the provided CSV files in the `csv_files/` directory.
+If you are setting up the environment for the first time, you can populate the required BigQuery tables using the provided CSV files in the `sample_data/` directory.
+
+> [!NOTE]
+> The data in `sample_data/` is synthetically generated for demonstration purposes.
+
 
 **1. Create the BigQuery Dataset**
 ```bash
@@ -100,12 +104,12 @@ bq --location=US mk --dataset ${GOOGLE_CLOUD_PROJECT}:${BQ_DATASET}
 
 **2. Load Data from CSV Files**
 ```bash
-bq load --autodetect --source_format=CSV ${BQ_DATASET}.asset_inventory ./csv_files/asset_inventory.csv
-bq load --autodetect --source_format=CSV ${BQ_DATASET}.endpoint_process_events ./csv_files/endpoint_process_events.csv
-bq load --autodetect --source_format=CSV ${BQ_DATASET}.incident_management ./csv_files/incident_management.csv
-bq load --autodetect --source_format=CSV ${BQ_DATASET}.network_connection_log ./csv_files/network_connection_log.csv
-bq load --autodetect --source_format=CSV ${BQ_DATASET}.response_playbooks ./csv_files/response_playbooks.csv
-bq load --autodetect --source_format=CSV ${BQ_DATASET}.threat_intelligence_kb ./csv_files/threat_intelligence_kb.csv
+bq load --autodetect --source_format=CSV ${BQ_DATASET}.asset_inventory ./sample_data/asset_inventory.csv
+bq load --autodetect --source_format=CSV ${BQ_DATASET}.endpoint_process_events ./sample_data/endpoint_process_events.csv
+bq load --autodetect --source_format=CSV ${BQ_DATASET}.incident_management ./sample_data/incident_management.csv
+bq load --autodetect --source_format=CSV ${BQ_DATASET}.network_connection_log ./sample_data/network_connection_log.csv
+bq load --autodetect --source_format=CSV ${BQ_DATASET}.response_playbooks ./sample_data/response_playbooks.csv
+bq load --autodetect --source_format=CSV ${BQ_DATASET}.threat_intelligence_kb ./sample_data/threat_intelligence_kb.csv
 ```
 
 ---
@@ -129,8 +133,15 @@ adk run cyber_guardian:root_agent --input "Raw alert text here..."
 
 **Example Test Query:**
 ```bash
-adk run cyber_guardian:root_agent --input "IOC_Match: hostname: kvm01, user: admin, ip_address: 192.168.1.50, IOC: high_risk_hash_123"
+adk run cyber_guardian:root_agent --input "IOC_Match: hostname: kvm01, user: admin, ip_address: 192.168.1.50, IOC: high_risk_hash_123 ........."
 ```
+
+#### 🧪 Using Sample Inputs for Testing
+
+You can use the examples provided in `sample_input.txt` to test the agent via CLI or Web UI.
+
+> [!NOTE]
+> The inputs in `sample_input.txt` are synthetically generated for demonstration.
 
 ### Alternative: Using Agent Starter Pack
 
