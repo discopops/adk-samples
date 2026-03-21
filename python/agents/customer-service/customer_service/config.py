@@ -13,11 +13,11 @@
 # limitations under the License.
 """Configuration module for the customer service agent."""
 
-import os
 import logging
-from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import BaseModel, Field
+import os
 
+from pydantic import BaseModel, Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)

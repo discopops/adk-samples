@@ -20,9 +20,11 @@ import dotenv
 import pytest
 from google.adk.runners import InMemoryRunner
 from google.genai.types import Part, UserContent
+
 from llm_auditor.agent import root_agent
 
 pytest_plugins = ("pytest_asyncio",)
+
 
 @pytest.fixture(scope="session", autouse=True)
 def load_env():
@@ -32,11 +34,13 @@ def load_env():
 @pytest.mark.asyncio
 async def test_happy_path():
     """Runs the agent on a simple input and expects a normal response."""
-    user_input = textwrap.dedent("""
+    user_input = textwrap.dedent(
+        """
         Double check this:
         Question: Why is the sky blue?
         Answer: Becauase the water is blue.
-    """).strip()
+    """
+    ).strip()
 
     runner = InMemoryRunner(agent=root_agent)
     session = await runner.session_service.create_session(

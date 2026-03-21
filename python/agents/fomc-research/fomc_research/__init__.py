@@ -17,6 +17,13 @@
 import logging
 import os
 
+import google.auth
+
+_, project_id = google.auth.default()
+os.environ.setdefault("GOOGLE_CLOUD_PROJECT", project_id)
+os.environ.setdefault("GOOGLE_CLOUD_LOCATION", "global")
+os.environ.setdefault("GOOGLE_GENAI_USE_VERTEXAI", "True")
+
 loglevel = os.getenv("GOOGLE_GENAI_FOMC_AGENT_LOG_LEVEL", "INFO")
 numeric_level = getattr(logging, loglevel.upper(), None)
 if not isinstance(numeric_level, int):
@@ -29,4 +36,4 @@ if not MODEL:
     MODEL = "gemini-2.5-flash"
 
 # MODEL needs to be defined before this import
-from . import agent  # pylint: disable=wrong-import-position
+from . import agent  # noqa: E402

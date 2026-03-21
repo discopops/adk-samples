@@ -34,6 +34,7 @@ To learn more, check out the [ADK Documentation](https://google.github.io/adk-do
 │   │   ├── academic-research
 │   │   ├── antom-payment
 │   │   ├── blog-writer
+│   │   ├── brand-aligner
 │   │   ├── brand-search-optimization
 │   │   ├── camel
 │   │   ├── customer-service
@@ -56,6 +57,8 @@ To learn more, check out the [ADK Documentation](https://google.github.io/adk-do
 │   │   ├── safety-plugins
 │   │   ├── short-movie-agents
 │   │   ├── software-bug-assistant
+│   │   ├── story_teller
+│   │   ├── supply-chain
 │   │   ├── travel-concierge
 │   │   └── README.md
 │   └── README.md

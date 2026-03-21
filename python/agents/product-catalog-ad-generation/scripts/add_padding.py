@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Adds whitespace padding to images to make them a 9:16 aspect ratio."""
+
 import logging
 import os
 
@@ -26,10 +27,11 @@ def add_padding_to_image(input_path, output_path):
         img = Image.open(input_path)
         width, height = img.size
 
+        aspect_ratio_error = 1e-6
         target_aspect_ratio = 9.0 / 16.0
         current_aspect_ratio = float(width) / float(height)
 
-        if abs(current_aspect_ratio - target_aspect_ratio) < 1e-6:
+        if abs(current_aspect_ratio - target_aspect_ratio) < aspect_ratio_error:
             img.save(output_path)
             return
 
@@ -48,13 +50,13 @@ def add_padding_to_image(input_path, output_path):
         new_img.paste(img, (paste_x, paste_y))
         new_img.save(output_path)
 
-    except (IOError, FileNotFoundError) as e:
+    except (OSError, FileNotFoundError) as e:
         logging.error("Error processing %s: %s", input_path, e)
 
 
 def process_images_in_folder(input_folder, output_folder):
     """
-    Processes all images in the input folder and saves them to the output folder.
+    Processes all images in the input folder and saves to the output folder.
     """
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)

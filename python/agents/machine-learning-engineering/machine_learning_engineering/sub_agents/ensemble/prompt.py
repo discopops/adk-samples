@@ -1,6 +1,5 @@
 """Defines the prompts for the ensemble agent."""
 
-
 INIT_ENSEMBLE_PLAN_INSTR = """# Introduction
 - You are a Kaggle grandmaster attending a competition.
 - We will now provide {num_solutions} Python Solutions used for the competiton.

@@ -20,7 +20,7 @@ from google.adk.models import LlmResponse
 
 from . import prompt
 
-_END_OF_EDIT_MARK = '---END-OF-EDIT---'
+_END_OF_EDIT_MARK = "---END-OF-EDIT---"
 
 
 def _remove_end_of_edit_mark(
@@ -38,8 +38,8 @@ def _remove_end_of_edit_mark(
 
 
 reviser_agent = Agent(
-    model='gemini-2.5-flash',
-    name='reviser_agent',
+    model="gemini-2.5-flash",
+    name="reviser_agent",
     instruction=prompt.REVISER_PROMPT,
     after_model_callback=_remove_end_of_edit_mark,
 )

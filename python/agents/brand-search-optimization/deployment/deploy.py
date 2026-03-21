@@ -14,13 +14,13 @@
 
 """Deployment script for Brand Search Optimization agent."""
 
-
 import vertexai
 from absl import app, flags
-from brand_search_optimization.agent import root_agent
-from brand_search_optimization.shared_libraries import constants
 from vertexai import agent_engines
 from vertexai.preview.reasoning_engines import AdkApp
+
+from brand_search_optimization.agent import root_agent
+from brand_search_optimization.shared_libraries import constants
 
 FLAGS = flags.FLAGS
 flags.DEFINE_string("project_id", None, "GCP project ID.")

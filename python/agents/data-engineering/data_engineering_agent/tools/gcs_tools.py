@@ -19,223 +19,240 @@ files in buckets,
 and reading files with various options (head, tail, or full content).
 """
 
-import json
-from typing import Any, Dict, List, Optional
+from typing import Any
+
 from google.cloud import storage
+
 from ..config import config
 
 
 def get_gcs_client() -> storage.Client:
-  """Get a configured GCS client."""
-  return storage.Client(project=config.project_id)
+    """Get a configured GCS client."""
+    return storage.Client(project=config.project_id)
 
 
-def validate_bucket_exists_tool(bucket_name: str) -> Dict[str, Any]:
-  """Validate if a GCS bucket exists.
+def validate_bucket_exists_tool(bucket_name: str) -> dict[str, Any]:
+    """Validate if a GCS bucket exists.
 
-  Args:
-      bucket_name (str): The name of the bucket to validate.
+    Args:
+        bucket_name (str): The name of the bucket to validate.
 
-  Returns:
-      Dict[str, Any]: Dictionary containing validation results and bucket
-      metadata if exists.
-  """
-  try:
-    client = get_gcs_client()
-    bucket = client.bucket(bucket_name)
+    Returns:
+        Dict[str, Any]: Dictionary containing validation results and bucket
+        metadata if exists.
+    """
+    try:
+        client = get_gcs_client()
+        bucket = client.bucket(bucket_name)
 
-    if bucket.exists():
-      bucket.reload()  # Get fresh metadata
-      return {
-          "status": "success",
-          "exists": True,
-          "bucket_name": bucket_name,
-          "metadata": {
-              "created": (
-                  bucket.time_created.isoformat()
-                  if bucket.time_created
-                  else None
-              ),
-              "updated": bucket.updated.isoformat() if bucket.updated else None,
-              "location": bucket.location,
-              "storage_class": bucket.storage_class,
-              "labels": bucket.labels,
-          },
-      }
-    else:
-      return {"status": "success", "exists": False, "bucket_name": bucket_name}
+        if bucket.exists():
+            bucket.reload()  # Get fresh metadata
+            return {
+                "status": "success",
+                "exists": True,
+                "bucket_name": bucket_name,
+                "metadata": {
+                    "created": (
+                        bucket.time_created.isoformat()
+                        if bucket.time_created
+                        else None
+                    ),
+                    "updated": bucket.updated.isoformat()
+                    if bucket.updated
+                    else None,
+                    "location": bucket.location,
+                    "storage_class": bucket.storage_class,
+                    "labels": bucket.labels,
+                },
+            }
+        else:
+            return {
+                "status": "success",
+                "exists": False,
+                "bucket_name": bucket_name,
+            }
 
-  except Exception as e:
-    return {"status": "error", "error": str(e)}
+    except Exception as e:
+        return {"status": "error", "error": str(e)}
 
 
 def validate_file_exists_tool(
     bucket_name: str, file_path: str
-) -> Dict[str, Any]:
-  """Validate if a file exists in a GCS bucket.
+) -> dict[str, Any]:
+    """Validate if a file exists in a GCS bucket.
 
-  Args:
-      bucket_name (str): The name of the bucket.
-      file_path (str): The path of the file within the bucket.
+    Args:
+        bucket_name (str): The name of the bucket.
+        file_path (str): The path of the file within the bucket.
 
-  Returns:
-      Dict[str, Any]: Dictionary containing validation results and file metadata
-      if exists.
-  """
-  try:
-    client = get_gcs_client()
-    bucket = client.bucket(bucket_name)
-    blob = bucket.blob(file_path)
+    Returns:
+        Dict[str, Any]: Dictionary containing validation results and file metadata
+        if exists.
+    """
+    try:
+        client = get_gcs_client()
+        bucket = client.bucket(bucket_name)
+        blob = bucket.blob(file_path)
 
-    if blob.exists():
-      blob.reload()  # Get fresh metadata
-      return {
-          "status": "success",
-          "exists": True,
-          "bucket_name": bucket_name,
-          "file_path": file_path,
-          "metadata": {
-              "size": blob.size,
-              "content_type": blob.content_type,
-              "created": (
-                  blob.time_created.isoformat() if blob.time_created else None
-              ),
-              "updated": blob.updated.isoformat() if blob.updated else None,
-              "md5_hash": blob.md5_hash,
-              "generation": blob.generation,
-          },
-      }
-    else:
-      return {
-          "status": "success",
-          "exists": False,
-          "bucket_name": bucket_name,
-          "file_path": file_path,
-      }
+        if blob.exists():
+            blob.reload()  # Get fresh metadata
+            return {
+                "status": "success",
+                "exists": True,
+                "bucket_name": bucket_name,
+                "file_path": file_path,
+                "metadata": {
+                    "size": blob.size,
+                    "content_type": blob.content_type,
+                    "created": (
+                        blob.time_created.isoformat()
+                        if blob.time_created
+                        else None
+                    ),
+                    "updated": blob.updated.isoformat()
+                    if blob.updated
+                    else None,
+                    "md5_hash": blob.md5_hash,
+                    "generation": blob.generation,
+                },
+            }
+        else:
+            return {
+                "status": "success",
+                "exists": False,
+                "bucket_name": bucket_name,
+                "file_path": file_path,
+            }
 
-  except Exception as e:
-    return {"status": "error", "error": str(e)}
+    except Exception as e:
+        return {"status": "error", "error": str(e)}
 
 
 def list_bucket_files_tool(
     bucket_name: str,
-    prefix: Optional[str] = None,
-    delimiter: Optional[str] = None,
-    max_results: Optional[int] = None,
-) -> Dict[str, Any]:
-  """List files in a GCS bucket with optional filtering.
+    prefix: str | None = None,
+    delimiter: str | None = None,
+    max_results: int | None = None,
+) -> dict[str, Any]:
+    """List files in a GCS bucket with optional filtering.
 
-  Args:
-      bucket_name (str): The name of the bucket.
-      prefix (Optional[str]): Filter results to objects whose names begin with
-        this prefix.
-      delimiter (Optional[str]): Filter results to objects whose names don't
-        contain the delimiter.
-      max_results (Optional[int]): Maximum number of results to return.
+    Args:
+        bucket_name (str): The name of the bucket.
+        prefix (Optional[str]): Filter results to objects whose names begin with
+          this prefix.
+        delimiter (Optional[str]): Filter results to objects whose names don't
+          contain the delimiter.
+        max_results (Optional[int]): Maximum number of results to return.
 
-  Returns:
-      Dict[str, Any]: Dictionary containing list of files and their metadata.
-  """
-  try:
-    client = get_gcs_client()
-    bucket = client.bucket(bucket_name)
+    Returns:
+        Dict[str, Any]: Dictionary containing list of files and their metadata.
+    """
+    try:
+        client = get_gcs_client()
+        bucket = client.bucket(bucket_name)
 
-    # Build the list of blobs
-    blobs = bucket.list_blobs(
-        prefix=prefix, delimiter=delimiter, max_results=max_results
-    )
+        # Build the list of blobs
+        blobs = bucket.list_blobs(
+            prefix=prefix, delimiter=delimiter, max_results=max_results
+        )
 
-    # Collect file information
-    files = []
-    prefixes = []
+        # Collect file information
+        files = []
+        prefixes = []
 
-    for blob in blobs:
-      if isinstance(blob, storage.Blob):
-        files.append({
-            "name": blob.name,
-            "size": blob.size,
-            "content_type": blob.content_type,
-            "created": (
-                blob.time_created.isoformat() if blob.time_created else None
-            ),
-            "updated": blob.updated.isoformat() if blob.updated else None,
-        })
-      else:
-        prefixes.append(blob)
+        for blob in blobs:
+            if isinstance(blob, storage.Blob):
+                files.append(
+                    {
+                        "name": blob.name,
+                        "size": blob.size,
+                        "content_type": blob.content_type,
+                        "created": (
+                            blob.time_created.isoformat()
+                            if blob.time_created
+                            else None
+                        ),
+                        "updated": blob.updated.isoformat()
+                        if blob.updated
+                        else None,
+                    }
+                )
+            else:
+                prefixes.append(blob)
 
-    return {
-        "status": "success",
-        "bucket_name": bucket_name,
-        "prefix": prefix,
-        "delimiter": delimiter,
-        "files": files,
-        "prefixes": prefixes,
-        "total_files": len(files),
-        "total_prefixes": len(prefixes),
-    }
+        return {
+            "status": "success",
+            "bucket_name": bucket_name,
+            "prefix": prefix,
+            "delimiter": delimiter,
+            "files": files,
+            "prefixes": prefixes,
+            "total_files": len(files),
+            "total_prefixes": len(prefixes),
+        }
 
-  except Exception as e:
-    return {"status": "error", "error": str(e)}
+    except Exception as e:
+        return {"status": "error", "error": str(e)}
 
 
 def read_gcs_file_tool(
     bucket_name: str, file_path: str, mode: str = "full", num_lines: int = 10
-) -> Dict[str, Any]:
-  """Read content from a GCS file with various options.
+) -> dict[str, Any]:
+    """Read content from a GCS file with various options.
 
-  Args:
-      bucket_name (str): The name of the bucket.
-      file_path (str): The path of the file within the bucket.
-      mode (str): Reading mode - "head", "tail", or "full". Defaults to "full".
-      num_lines (int): Number of lines to read for head/tail modes. Defaults to
-        10.
+    Args:
+        bucket_name (str): The name of the bucket.
+        file_path (str): The path of the file within the bucket.
+        mode (str): Reading mode - "head", "tail", or "full". Defaults to "full".
+        num_lines (int): Number of lines to read for head/tail modes. Defaults to
+          10.
 
-  Returns:
-      Dict[str, Any]: Dictionary containing file content and metadata.
-  """
-  try:
-    client = get_gcs_client()
-    bucket = client.bucket(bucket_name)
-    blob = bucket.blob(file_path)
+    Returns:
+        Dict[str, Any]: Dictionary containing file content and metadata.
+    """
+    try:
+        client = get_gcs_client()
+        bucket = client.bucket(bucket_name)
+        blob = bucket.blob(file_path)
 
-    if not blob.exists():
-      return {
-          "status": "error",
-          "error": f"File {file_path} does not exist in bucket {bucket_name}",
-      }
+        if not blob.exists():
+            return {
+                "status": "error",
+                "error": f"File {file_path} does not exist in bucket {bucket_name}",
+            }
 
-    # Read the file content
-    content = blob.download_as_text()
-    lines = content.splitlines()
+        # Read the file content
+        content = blob.download_as_text()
+        lines = content.splitlines()
 
-    # Process based on mode
-    if mode == "head":
-      result_lines = lines[:num_lines]
-      position = "start"
-    elif mode == "tail":
-      result_lines = lines[-num_lines:]
-      position = "end"
-    else:  # full
-      result_lines = lines
-      position = "full"
+        # Process based on mode
+        if mode == "head":
+            result_lines = lines[:num_lines]
+            position = "start"
+        elif mode == "tail":
+            result_lines = lines[-num_lines:]
+            position = "end"
+        else:  # full
+            result_lines = lines
+            position = "full"
 
-    return {
-        "status": "success",
-        "bucket_name": bucket_name,
-        "file_path": file_path,
-        "mode": mode,
-        "num_lines": len(result_lines),
-        "position": position,
-        "content": "\n".join(result_lines),
-        "metadata": {
-            "size": blob.size,
-            "content_type": blob.content_type,
-            "created": (
-                blob.time_created.isoformat() if blob.time_created else None
-            ),
-            "updated": blob.updated.isoformat() if blob.updated else None,
-        },
-    }
+        return {
+            "status": "success",
+            "bucket_name": bucket_name,
+            "file_path": file_path,
+            "mode": mode,
+            "num_lines": len(result_lines),
+            "position": position,
+            "content": "\n".join(result_lines),
+            "metadata": {
+                "size": blob.size,
+                "content_type": blob.content_type,
+                "created": (
+                    blob.time_created.isoformat() if blob.time_created else None
+                ),
+                "updated": blob.updated.isoformat() if blob.updated else None,
+            },
+        }
 
-  except Exception as e:
-    return {"status": "error", "error": str(e)}
+    except Exception as e:
+        return {"status": "error", "error": str(e)}

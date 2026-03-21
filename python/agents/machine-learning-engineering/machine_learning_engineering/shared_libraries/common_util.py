@@ -1,25 +1,25 @@
 """Common utility functions."""
 
-import random
-import torch
 import os
+import random
 import shutil
-import numpy as np
 
+import numpy as np
+import torch
 from google.adk.models import llm_response
 
 
 def get_text_from_response(
     response: llm_response.LlmResponse,
 ) -> str:
-  """Extracts text from response."""
-  final_text = ""
-  if response.content and response.content.parts:
-    num_parts = len(response.content.parts)
-    for i in range(num_parts):
-        if hasattr(response.content.parts[i], "text"):
-            final_text += response.content.parts[i].text
-  return final_text
+    """Extracts text from response."""
+    final_text = ""
+    if response.content and response.content.parts:
+        num_parts = len(response.content.parts)
+        for i in range(num_parts):
+            if hasattr(response.content.parts[i], "text"):
+                final_text += response.content.parts[i].text
+    return final_text
 
 
 def set_random_seed(seed: int) -> None:

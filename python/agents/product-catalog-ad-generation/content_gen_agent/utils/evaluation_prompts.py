@@ -18,7 +18,7 @@ def get_image_evaluation_prompt(input_prompt: str) -> str:
     """Generates a detailed prompt for evaluating an AI-generated image.
 
     Args:
-        input_prompt: The original user prompt that was used for image generation.
+        input_prompt: The original user prompt that used for image generation.
 
     Returns:
         A formatted string containing the evaluation prompt for the AI model.
@@ -26,9 +26,9 @@ def get_image_evaluation_prompt(input_prompt: str) -> str:
     return f"""
     # ROLE: AI Image Generation Judge
 
-    You are a meticulous and objective evaluator for an AI image generation system.
-    Your task is to evaluate a generated image against six distinct criteria and
-    provide a final pass/fail verdict.
+    You are a meticulous and objective evaluator for an AI image generation
+    system. Your task is to evaluate a generated image against six distinct
+    criteria and provide a final pass/fail verdict.
 
     You must follow all instructions and provide your output *only* in the
     specified JSON format.

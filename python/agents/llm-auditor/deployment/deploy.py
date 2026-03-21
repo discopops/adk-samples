@@ -16,13 +16,13 @@
 
 import os
 
-from absl import app
-from absl import flags
-from dotenv import load_dotenv
-from llm_auditor.agent import root_agent
 import vertexai
+from absl import app, flags
+from dotenv import load_dotenv
 from vertexai import agent_engines
 from vertexai.preview.reasoning_engines import AdkApp
+
+from llm_auditor.agent import root_agent
 
 FLAGS = flags.FLAGS
 flags.DEFINE_string("project_id", None, "GCP project ID.")
@@ -63,13 +63,16 @@ def delete(resource_id: str) -> None:
 
 def list_agents() -> None:
     remote_agents = agent_engines.list()
-    TEMPLATE = '''
+    TEMPLATE = """
 {agent.name} ("{agent.display_name}")
 - Create time: {agent.create_time}
 - Update time: {agent.update_time}
-'''
-    remote_agents_string = '\n'.join(TEMPLATE.format(agent=agent) for agent in remote_agents)
+"""
+    remote_agents_string = "\n".join(
+        TEMPLATE.format(agent=agent) for agent in remote_agents
+    )
     print(f"All remote agents:\n{remote_agents_string}")
+
 
 def main(argv: list[str]) -> None:
     del argv  # unused
@@ -84,7 +87,8 @@ def main(argv: list[str]) -> None:
         FLAGS.location if FLAGS.location else os.getenv("GOOGLE_CLOUD_LOCATION")
     )
     bucket = (
-        FLAGS.bucket if FLAGS.bucket
+        FLAGS.bucket
+        if FLAGS.bucket
         else os.getenv("GOOGLE_CLOUD_STORAGE_BUCKET")
     )
 

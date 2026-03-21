@@ -18,12 +18,11 @@ from unittest.mock import MagicMock, patch
 
 from google.adk.tools import ToolContext
 
-from brand_search_optimization.tools import bq_connector
 from brand_search_optimization.shared_libraries import constants
+from brand_search_optimization.tools import bq_connector
 
 
 class TestBrandSearchOptimization:
-
     @patch("brand_search_optimization.tools.bq_connector.client")
     def test_get_product_details_for_brand_success(self, mock_client):
         # Mock ToolContext

@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import time
 import os
+
 from google.cloud import bigquery
 from vertexai import rag
 
@@ -45,7 +45,7 @@ def check_bq_models(dataset_id: str) -> str:
         return str(model_list)
 
     except Exception as e:
-        return f"An error occurred: {str(e)}"
+        return f"An error occurred: {e!s}"
 
 
 def rag_response(query: str) -> str:

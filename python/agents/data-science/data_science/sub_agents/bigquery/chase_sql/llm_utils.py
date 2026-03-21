@@ -18,14 +18,17 @@ import functools
 import os
 import random
 import time
+from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import Callable, List, Optional
 
 import dotenv
 import vertexai
 from google.cloud import aiplatform
-from vertexai.generative_models import (GenerationConfig, HarmBlockThreshold,
-                                        HarmCategory)
+from vertexai.generative_models import (
+    GenerationConfig,
+    HarmBlockThreshold,
+    HarmCategory,
+)
 from vertexai.preview import caching
 from vertexai.preview.generative_models import GenerativeModel
 
@@ -69,9 +72,7 @@ GEMINI_AVAILABLE_REGIONS = [
     "asia-southeast1",
     "southamerica-east1",
 ]
-GEMINI_URL = (
-    "projects/{GCP_PROJECT}/locations/{region}/publishers/google/models/{model_name}"
-)
+GEMINI_URL = "projects/{GCP_PROJECT}/locations/{region}/publishers/google/models/{model_name}"
 
 aiplatform.init(
     project=GCP_PROJECT,
@@ -140,7 +141,9 @@ class GeminiModel:
                 model_name=self.model_name,
             )
         if cache_name is not None:
-            cached_content = caching.CachedContent(cached_content_name=cache_name)
+            cached_content = caching.CachedContent(
+                cached_content_name=cache_name
+            )
             self.model = GenerativeModel.from_cached_content(
                 cached_content=cached_content
             )
@@ -174,11 +177,11 @@ class GeminiModel:
 
     def call_parallel(
         self,
-        prompts: List[str],
-        parser_func: Optional[Callable[[str], str]] = None,
+        prompts: list[str],
+        parser_func: Callable[[str], str] | None = None,
         timeout: int = 60,
         max_retries: int = 5,
-    ) -> List[Optional[str]]:
+    ) -> list[str | None]:
         """Calls the Gemini model for multiple prompts in parallel using threads with retry logic.
 
         Args:
@@ -200,13 +203,15 @@ class GeminiModel:
                 try:
                     return self.call(prompt, parser_func)
                 except Exception as e:  # pylint: disable=broad-exception-caught
-                    print(f"Error for prompt {index}: {str(e)}")
+                    print(f"Error for prompt {index}: {e!s}")
                     retries += 1
                     if retries <= max_retries:
-                        print(f"Retrying ({retries}/{max_retries}) for prompt {index}")
+                        print(
+                            f"Retrying ({retries}/{max_retries}) for prompt {index}"
+                        )
                         time.sleep(1)  # Small delay before retrying
                     else:
-                        return f"Error after retries: {str(e)}"
+                        return f"Error after retries: {e!s}"
 
         # Create and start one thread for each prompt
         with ThreadPoolExecutor(max_workers=len(prompts)) as executor:
@@ -224,10 +229,9 @@ class GeminiModel:
                     results[index] = "Unhandled Error"
 
         # Handle remaining unfinished tasks after the timeout
-        for future in future_to_index:
-            index = future_to_index[future]
+        for future, index in future_to_index.items():
             if not future.done():
                 print(f"Timeout occurred for prompt {index}")
                 results[index] = "Timeout"
 
-        return results
+                return results

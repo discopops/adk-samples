@@ -1,7 +1,7 @@
-
 """Basic evalualtion for Image Scoring."""
 
 import pathlib
+
 import dotenv
 import pytest
 from google.adk.evaluation import AgentEvaluator

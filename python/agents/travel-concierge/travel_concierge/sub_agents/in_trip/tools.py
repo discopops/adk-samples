@@ -15,15 +15,17 @@
 """Tools for the in_trip, trip_monitor and day_of agents."""
 
 from datetime import datetime
-from typing import Dict, Any
+from typing import Any
 
 from google.adk.agents.readonly_context import ReadonlyContext
 
-from travel_concierge.sub_agents.in_trip import prompt
 from travel_concierge.shared_libraries import constants
+from travel_concierge.sub_agents.in_trip import prompt
 
 
-def flight_status_check(flight_number: str, flight_date: str, checkin_time: str, departure_time: str):
+def flight_status_check(
+    flight_number: str, flight_date: str, checkin_time: str, departure_time: str
+):
     """Checks the status of a flight, given its flight_number, date, checkin_time and departure_time."""
     print("Checking", flight_number, flight_date, checkin_time, departure_time)
     return {"status": f"Flight {flight_number} checked"}
@@ -32,12 +34,16 @@ def flight_status_check(flight_number: str, flight_date: str, checkin_time: str,
 def event_booking_check(event_name: str, event_date: str, event_location: str):
     """Checks the status of an event that requires booking, given its event_name, date, and event_location."""
     print("Checking", event_name, event_date, event_location)
-    if event_name.startswith("Space Needle"):  # Mocking an exception to illustrate
+    if event_name.startswith(
+        "Space Needle"
+    ):  # Mocking an exception to illustrate
         return {"status": f"{event_name} is closed."}
     return {"status": f"{event_name} checked"}
 
 
-def weather_impact_check(activity_name: str, activity_date: str, activity_location: str):
+def weather_impact_check(
+    activity_name: str, activity_date: str, activity_location: str
+):
     """
     Checks the status of an outdoor activity that may be impacted by weather, given its name, date, and its location.
 
@@ -53,7 +59,9 @@ def weather_impact_check(activity_name: str, activity_date: str, activity_locati
     return {"status": f"{activity_name} checked"}
 
 
-def get_event_time_as_destination(destin_json: Dict[str, Any], default_value: str):
+def get_event_time_as_destination(
+    destin_json: dict[str, Any], default_value: str
+):
     """Returns an event time appropriate for the location type."""
     match destin_json["event_type"]:
         case "flight":
@@ -66,7 +74,7 @@ def get_event_time_as_destination(destin_json: Dict[str, Any], default_value: st
             return default_value
 
 
-def parse_as_origin(origin_json: Dict[str, Any]):
+def parse_as_origin(origin_json: dict[str, Any]):
     """Returns a tuple of strings (origin, depart_by) appropriate for the starting location."""
     match origin_json["event_type"]:
         case "flight":
@@ -76,12 +84,16 @@ def parse_as_origin(origin_json: Dict[str, Any]):
             )
         case "hotel":
             return (
-                origin_json["description"] + " " + origin_json.get("address", ""),
+                origin_json["description"]
+                + " "
+                + origin_json.get("address", ""),
                 "any time",
             )
         case "visit":
             return (
-                origin_json["description"] + " " + origin_json.get("address", ""),
+                origin_json["description"]
+                + " "
+                + origin_json.get("address", ""),
                 origin_json["end_time"],
             )
         case "home":
@@ -95,7 +107,7 @@ def parse_as_origin(origin_json: Dict[str, Any]):
             return "Local in the region", "any time"
 
 
-def parse_as_destin(destin_json: Dict[str, Any]):
+def parse_as_destin(destin_json: dict[str, Any]):
     """Returns a tuple of strings (destination, arrive_by) appropriate for the destination."""
     match destin_json["event_type"]:
         case "flight":
@@ -105,12 +117,16 @@ def parse_as_destin(destin_json: Dict[str, Any]):
             )
         case "hotel":
             return (
-                destin_json["description"] + " " + destin_json.get("address", ""),
+                destin_json["description"]
+                + " "
+                + destin_json.get("address", ""),
                 "any time",
             )
         case "visit":
             return (
-                destin_json["description"] + " " + destin_json.get("address", ""),
+                destin_json["description"]
+                + " "
+                + destin_json.get("address", ""),
                 destin_json["start_time"],
             )
         case "home":
@@ -124,7 +140,9 @@ def parse_as_destin(destin_json: Dict[str, Any]):
             return "Local in the region", "as soon as possible"
 
 
-def find_segment(profile: Dict[str, Any], itinerary: Dict[str, Any], current_datetime: str):
+def find_segment(
+    profile: dict[str, Any], itinerary: dict[str, Any], current_datetime: str
+):
     """
     Find the events to travel from A to B
     This follows the itinerary schema in types.Itinerary.
@@ -135,7 +153,7 @@ def find_segment(profile: Dict[str, Any], itinerary: Dict[str, Any], current_dat
     Args:
         profile: A dictionary containing the user's profile.
         itinerary: A dictionary containing the user's itinerary.
-        current_datetime: A string containing the current date and time.   
+        current_datetime: A string containing the current date and time.
 
     Returns:
       from - capture information about the origin of this segment.
@@ -168,10 +186,16 @@ def find_segment(profile: Dict[str, Any], itinerary: Dict[str, Any], current_dat
             # we find one we need to pay attention
             origin_json = destin_json
             destin_json = event
-            event_time = get_event_time_as_destination(destin_json, current_time)
+            event_time = get_event_time_as_destination(
+                destin_json, current_time
+            )
             # The moment we find an event that's in the immediate future we stop to handle it
             print(
-                event["event_type"], event_date, current_date, event_time, current_time
+                event["event_type"],
+                event_date,
+                current_date,
+                event_time,
+                current_time,
             )
             if event_date >= current_date and event_time >= current_time:
                 break
@@ -188,7 +212,7 @@ def find_segment(profile: Dict[str, Any], itinerary: Dict[str, Any], current_dat
     return (travel_from, travel_to, leave_by, arrive_by)
 
 
-def _inspect_itinerary(state: dict[str: Any]):
+def _inspect_itinerary(state: dict[str:Any]):
     """Identifies and returns the itinerary, profile and current datetime from the session state."""
 
     itinerary = state[constants.ITIN_KEY]

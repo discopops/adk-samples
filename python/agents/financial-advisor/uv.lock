@@ -18,7 +18,7 @@ wheels = [
 
 [[package]]
 name = "agent-starter-pack"
-version = "0.22.1"
+version = "0.38.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "backoff" },
@@ -30,9 +30,9 @@ dependencies = [
     { name = "rich" },
     { name = "tomli", marker = "python_full_version < '3.11'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/bf/3b/5bbd44980bc96633eebc08028e9eb5b1dca06280a2949578917a9452bb6f/agent_starter_pack-0.22.1.tar.gz", hash = "sha256:43a8652612180886379129bc1b677b1acedd4b6b5bd3a08189d6ab239c91fae5", size = 12280677, upload-time = "2025-11-29T15:10:09.4Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/53/e2/84a3b260cf2459bb19f19de50ba0ccbb7235504cade0ac9a8bd853fd2d67/agent_starter_pack-0.38.0.tar.gz", hash = "sha256:6589a39e38de2d2e450c01b05e64570570b889da19d4a2d8a869561ed5a6c15e", size = 12159595, upload-time = "2026-02-18T19:42:34.228Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a8/dd/7b40d3e9de4b19834601d8038542419e51d6995b3da42c39fc540684cfba/agent_starter_pack-0.22.1-py3-none-any.whl", hash = "sha256:3b296a6a00352cce00ccb68ad3725cb1aca8e94829dff98d92020bef6f2faecf", size = 3254280, upload-time = "2025-11-29T15:10:05.82Z" },
+    { url = "https://files.pythonhosted.org/packages/82/95/01db718f26f5b697bc8d801eadc0764dcf2d3d9dc38f45afb81626aa827c/agent_starter_pack-0.38.0-py3-none-any.whl", hash = "sha256:8d651e649f1b5e4aa8bf0eaa1e9c5531cb7ea11d80ce6524b9432d358f645b06", size = 3515189, upload-time = "2026-02-18T19:42:36.762Z" },
 ]
 
 [[package]]
@@ -581,50 +581,45 @@ dependencies = [
     { name = "python-dotenv" },
 ]
 
-[package.optional-dependencies]
-lint = [
-    { name = "codespell" },
-    { name = "mypy" },
-    { name = "ruff" },
-    { name = "types-pyyaml" },
-    { name = "types-requests" },
-]
-
 [package.dev-dependencies]
 deployment = [
     { name = "absl-py" },
 ]
 dev = [
     { name = "agent-starter-pack" },
+    { name = "codespell" },
     { name = "google-adk", extra = ["eval"] },
+    { name = "mypy" },
     { name = "nest-asyncio" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
+    { name = "ruff" },
+    { name = "types-pyyaml" },
+    { name = "types-requests" },
 ]
 
 [package.metadata]
 requires-dist = [
-    { name = "codespell", marker = "extra == 'lint'", specifier = ">=2.2.0" },
     { name = "google-adk", specifier = ">=1.0.0" },
     { name = "google-cloud-aiplatform", extras = ["adk", "agent-engines"], specifier = ">=1.93.0" },
     { name = "google-genai", specifier = ">=1.9.0" },
-    { name = "mypy", marker = "extra == 'lint'", specifier = ">=1.15.0" },
     { name = "pydantic", specifier = ">=2.10.6" },
     { name = "python-dotenv", specifier = ">=1.0.1" },
-    { name = "ruff", marker = "extra == 'lint'", specifier = ">=0.4.6" },
-    { name = "types-pyyaml", marker = "extra == 'lint'", specifier = ">=6.0.12.20240917" },
-    { name = "types-requests", marker = "extra == 'lint'", specifier = ">=2.32.0.20240914" },
 ]
-provides-extras = ["lint"]
 
 [package.metadata.requires-dev]
 deployment = [{ name = "absl-py", specifier = ">=2.2.1" }]
 dev = [
     { name = "agent-starter-pack", specifier = ">=0.14.1" },
+    { name = "codespell", specifier = ">=2.2.0" },
     { name = "google-adk", extras = ["eval"], specifier = ">=1.0.0" },
+    { name = "mypy", specifier = ">=1.15.0" },
     { name = "nest-asyncio", specifier = ">=1.6.0" },
     { name = "pytest", specifier = ">=8.3.2" },
     { name = "pytest-asyncio", specifier = ">=0.23.7" },
+    { name = "ruff", specifier = ">=0.4.6" },
+    { name = "types-pyyaml", specifier = ">=6.0.12.20240917" },
+    { name = "types-requests", specifier = ">=2.32.0.20240914" },
 ]
 
 [[package]]

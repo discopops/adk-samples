@@ -19,7 +19,9 @@ from google.adk.agents import Agent
 from ..agent import MODEL
 from ..shared_libraries.callbacks import rate_limit_callback
 from ..tools.compare_statements import compare_statements_tool
-from ..tools.compute_rate_move_probability import compute_rate_move_probability_tool
+from ..tools.compute_rate_move_probability import (
+    compute_rate_move_probability_tool,
+)
 from ..tools.fetch_transcript import fetch_transcript_tool
 from ..tools.store_state import store_state_tool
 from . import research_agent_prompt

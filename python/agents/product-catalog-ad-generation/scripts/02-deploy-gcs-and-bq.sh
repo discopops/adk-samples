@@ -54,10 +54,10 @@ echo "🚀 Starting GCS bucket and BigQuery deployment for project ${PROJECT_ID}
 
 # --- GCS Bucket Creation ---
 echo "📦 Creating GCS Bucket for Static Content..."
-if gsutil ls -b "gs://${STATIC_CONTENT_BUCKET}" &> /dev/null; then
+if gcloud storage ls --buckets "gs://${STATIC_CONTENT_BUCKET}" &> /dev/null; then
     echo "   -> Bucket gs://${STATIC_CONTENT_BUCKET} already exists."
 else
-    gsutil mb -p "${PROJECT_ID}" -l "${REGION}" "gs://${STATIC_CONTENT_BUCKET}"
+    gcloud storage buckets create "gs://${STATIC_CONTENT_BUCKET}" --project="${PROJECT_ID}" --location="${REGION}"
     echo "   -> Bucket gs://${STATIC_CONTENT_BUCKET} created."
 fi
 echo "✅ GCS bucket is ready."
@@ -75,22 +75,22 @@ upload_with_confirmation() {
   local dest_bucket_path="gs://${STATIC_CONTENT_BUCKET}/${dest_folder}/"
 
   echo "📤 Checking for existing content in ${dest_folder}..."
-  if gsutil ls "${dest_bucket_path}" | grep -q '.'; then
+  if gcloud storage ls "${dest_bucket_path}" | grep -q '.'; then
     echo "   -> Folder ${dest_bucket_path} already contains files."
     read -p "   -> Do you want to clear the folder and re-upload from ${source_dir}? (y/n) " -n 1 -r
     echo # Move to a new line
     if [[ $REPLY =~ ^[Yy]$ ]]; then
       echo "   -> Clearing existing content from ${dest_folder} folder..."
-      gsutil -m rm "${dest_bucket_path}**"
+      gcloud storage rm "${dest_bucket_path}**"
       echo "   -> Uploading new content..."
-      gsutil -m cp -r "${source_dir}"/* "${dest_bucket_path}"
+      gcloud storage cp --recursive "${source_dir}"/* "${dest_bucket_path}"
       echo "   -> Upload complete."
     else
       echo "   -> Skipping upload."
     fi
   else
     echo "   -> Folder is empty. Uploading content from ${source_dir}..."
-    gsutil -m cp -r "${source_dir}"/* "${dest_bucket_path}"
+    gcloud storage cp --recursive "${source_dir}"/* "${dest_bucket_path}"
     echo "   -> Upload complete."
   fi
   echo
@@ -112,8 +112,12 @@ echo "🤖 Populating BigQuery table using Gemini..."
 # Install required Python libraries
 echo "   -> Installing Python dependencies..."
 
+# Check if uv command exists
+if command -v uv &>/dev/null; then
+    echo "Using uv pip..."
+    pip_cmd="uv pip"
 # Check if pip3 command exists
-if command -v pip3 &>/dev/null; then
+elif command -v pip3 &>/dev/null; then
     echo "Using pip3..."
     pip_cmd="pip3"
 # If pip3 is not found, check for pip
@@ -121,11 +125,15 @@ elif command -v pip &>/dev/null; then
     echo "Using pip..."
     pip_cmd="pip"
 else
-    echo "Error: pip or pip3 not found. Please install Python and pip."
+    echo "Error: uv, pip, or pip3 not found. Please install uv or Python and pip."
     exit 1
 fi
 
-"$pip_cmd" install --upgrade --user -q google-genai google-cloud-bigquery google-cloud-storage
+if [[ "$pip_cmd" == "uv pip" ]]; then
+    $pip_cmd install --upgrade -q google-genai google-cloud-bigquery google-cloud-storage
+else
+    "$pip_cmd" install --upgrade --user -q google-genai google-cloud-bigquery google-cloud-storage
+fi
 
 # Run the Python script
 echo "   -> Running Python script to populate BigQuery..."

@@ -1,35 +1,40 @@
 """Utility functions for debug agents."""
 
-from typing import Optional
 import functools
 
 from google.adk import agents
 from google.adk.agents import callback_context as callback_context_module
-from google.adk.models import llm_response as llm_response_module
 from google.adk.models import llm_request as llm_request_module
-from google.genai import types
+from google.adk.models import llm_response as llm_response_module
 from google.adk.tools.google_search_tool import google_search
+from google.genai import types
 
-from machine_learning_engineering.shared_libraries import debug_prompt
-from machine_learning_engineering.shared_libraries import code_util
-from machine_learning_engineering.shared_libraries import common_util
-from machine_learning_engineering.shared_libraries import check_leakage_util
-from machine_learning_engineering.shared_libraries import config
+from machine_learning_engineering.shared_libraries import (
+    check_leakage_util,
+    code_util,
+    common_util,
+    config,
+    debug_prompt,
+)
 
 
 def check_rollback(
     callback_context: callback_context_module.CallbackContext,
-) -> Optional[types.Content]:
+) -> types.Content | None:
     """Checks if rollback is needed and updates related states."""
     agent_name = callback_context.agent_name
     if agent_name.startswith("ablation"):
         return None
     suffix = code_util.get_updated_suffix(callback_context=callback_context)
-    code_execution_result_state_key = code_util.get_code_execution_result_state_key(
-        agent_name=agent_name,
-        suffix=suffix,
+    code_execution_result_state_key = (
+        code_util.get_code_execution_result_state_key(
+            agent_name=agent_name,
+            suffix=suffix,
+        )
     )
-    result_dict = callback_context.state.get(code_execution_result_state_key, {})
+    result_dict = callback_context.state.get(
+        code_execution_result_state_key, {}
+    )
     if result_dict.get("returncode", 1) == 1:
         # Rollback is needed
         callback_context.state[code_execution_result_state_key] = {}
@@ -40,7 +45,7 @@ def get_bug_summary(
     callback_context: callback_context_module.CallbackContext,
     llm_response: llm_response_module.LlmResponse,
     prefix: str,
-) -> Optional[llm_response_module.LlmResponse]:
+) -> llm_response_module.LlmResponse | None:
     """Gets the bug summary."""
     response_text = common_util.get_text_from_response(llm_response)
     clean_bug = response_text.replace("```", "")
@@ -58,15 +63,19 @@ def skip_bug_summary(
     callback_context: callback_context_module.CallbackContext,
     llm_request: llm_request_module.LlmRequest,
     prefix: str,
-) -> Optional[llm_response_module.LlmResponse]:
+) -> llm_response_module.LlmResponse | None:
     """Skips the bug summary if there are no bugs."""
     agent_name = callback_context.agent_name
     suffix = code_util.get_updated_suffix(callback_context=callback_context)
-    code_execution_result_state_key = code_util.get_code_execution_result_state_key(
-        agent_name=agent_name,
-        suffix=suffix,
+    code_execution_result_state_key = (
+        code_util.get_code_execution_result_state_key(
+            agent_name=agent_name,
+            suffix=suffix,
+        )
     )
-    result_dict = callback_context.state.get(code_execution_result_state_key, {})
+    result_dict = callback_context.state.get(
+        code_execution_result_state_key, {}
+    )
     if result_dict and result_dict.get("returncode", 1) == 0:
         key_name = code_util.get_name_with_prefix_and_suffix(
             base_name="bug_summary",
@@ -81,15 +90,19 @@ def skip_bug_summary(
 def check_bug_existence(
     callback_context: callback_context_module.CallbackContext,
     llm_request: llm_request_module.LlmRequest,
-) -> Optional[llm_response_module.LlmResponse]:
+) -> llm_response_module.LlmResponse | None:
     """Checks if a bug exists in the code."""
     agent_name = callback_context.agent_name
     suffix = code_util.get_updated_suffix(callback_context=callback_context)
-    code_execution_result_state_key = code_util.get_code_execution_result_state_key(
-        agent_name=agent_name,
-        suffix=suffix,
+    code_execution_result_state_key = (
+        code_util.get_code_execution_result_state_key(
+            agent_name=agent_name,
+            suffix=suffix,
+        )
     )
-    result_dict = callback_context.state.get(code_execution_result_state_key, {})
+    result_dict = callback_context.state.get(
+        code_execution_result_state_key, {}
+    )
     if result_dict and result_dict.get("returncode", 1) == 0:
         return llm_response_module.LlmResponse()
     return None
@@ -101,9 +114,11 @@ def get_bug_summary_agent_instruction(
     """Gets the bug summary agent instruction."""
     agent_name = context.agent_name
     suffix = code_util.get_updated_suffix(callback_context=context)
-    code_execution_result_state_key = code_util.get_code_execution_result_state_key(
-        agent_name=agent_name,
-        suffix=suffix,
+    code_execution_result_state_key = (
+        code_util.get_code_execution_result_state_key(
+            agent_name=agent_name,
+            suffix=suffix,
+        )
     )
     result_dict = context.state.get(code_execution_result_state_key, {})
     if agent_name.startswith("model_eval"):
@@ -166,7 +181,7 @@ def get_code_from_response(
     callback_context: callback_context_module.CallbackContext,
     llm_response: llm_response_module.LlmResponse,
     do_eval: bool = True,
-) -> Optional[llm_response_module.LlmResponse]:
+) -> llm_response_module.LlmResponse | None:
     """Gets the code from the response."""
     response_text = common_util.get_text_from_response(llm_response)
     code = response_text.replace("```python", "").replace("```", "")
@@ -179,7 +194,9 @@ def get_code_from_response(
     if agent_name.startswith("check_data_use"):
         if "All the provided information is used" in code:
             callback_context.state[f"check_data_use_finish_{suffix}"] = True
-        check_data_use_finish = callback_context.state.get(f"check_data_use_finish_{suffix}", False)
+        check_data_use_finish = callback_context.state.get(
+            f"check_data_use_finish_{suffix}", False
+        )
         if not check_data_use_finish:
             new_code = code
         else:
@@ -188,8 +205,12 @@ def get_code_from_response(
         if "debug" not in agent_name:
             task_id = callback_context.agent_name.split("_")[-1]
             step = callback_context.state.get(f"refine_step_{task_id}", 0)
-            code_block = callback_context.state.get(f"refine_code_block_{step}_{task_id}", "")
-            prev_code = callback_context.state.get(f"train_code_{step}_{task_id}", "")
+            code_block = callback_context.state.get(
+                f"refine_code_block_{step}_{task_id}", ""
+            )
+            prev_code = callback_context.state.get(
+                f"train_code_{step}_{task_id}", ""
+            )
             new_code = prev_code.replace(code_block, code)
         else:
             new_code = code
@@ -279,7 +300,7 @@ def get_run_and_debug_agent(
     suffix: str,
     agent_description: str,
     instruction_func: agents.llm_agent.InstructionProvider,
-    before_model_callback: Optional[agents.llm_agent.BeforeModelCallback],
+    before_model_callback: agents.llm_agent.BeforeModelCallback | None,
 ) -> agents.LoopAgent:
     """Gets the run and debug agent."""
     if prefix.startswith("ensemble_plan_implement"):
@@ -307,12 +328,16 @@ def get_run_and_debug_agent(
     )
     run_sequential_sub_agents = [run_agent]
     if use_data_leakage_checker:
-        data_leakage_checker_agent = check_leakage_util.get_data_leakage_checker_agent(
-            prefix=prefix,
-            suffix=suffix,
+        data_leakage_checker_agent = (
+            check_leakage_util.get_data_leakage_checker_agent(
+                prefix=prefix,
+                suffix=suffix,
+            )
         )
         run_sequential_sub_agents.append(data_leakage_checker_agent)
-        additional_agent_description = " and check if there are data leakage issues"
+        additional_agent_description = (
+            " and check if there are data leakage issues"
+        )
     else:
         additional_agent_description = ""
     run_sequential_agent = agents.SequentialAgent(
@@ -330,9 +355,7 @@ def get_run_and_debug_agent(
             prefix=prefix,
             suffix=suffix,
         ),
-        description=(
-            f"{agent_description} until it succeeds."
-        ),
+        description=(f"{agent_description} until it succeeds."),
         sub_agents=[run_sequential_agent],
         max_iterations=config.CONFIG.max_retry,
     )

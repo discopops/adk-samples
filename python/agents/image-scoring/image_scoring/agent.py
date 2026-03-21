@@ -1,13 +1,16 @@
-import datetime, uuid
-from zoneinfo import ZoneInfo
+import datetime
 import os
+import uuid
+from zoneinfo import ZoneInfo
+
 import google.auth
-from .sub_agents.prompt import image_generation_prompt_agent 
-from .sub_agents.image import image_generation_agent 
-from .sub_agents.scoring import scoring_images_prompt 
-from .checker_agent import checker_agent_instance
-from google.adk.agents import SequentialAgent, LoopAgent
+from google.adk.agents import LoopAgent, SequentialAgent
 from google.adk.agents.callback_context import CallbackContext
+
+from .checker_agent import checker_agent_instance
+from .sub_agents.image import image_generation_agent
+from .sub_agents.prompt import image_generation_prompt_agent
+from .sub_agents.scoring import scoring_images_prompt
 
 # To use AI Studio credentials:
 # 1. Create a .env file in the /app directory with:
@@ -43,7 +46,6 @@ def set_session(callback_context: CallbackContext):
 
 image_generation_scoring_agent = SequentialAgent(
     name="image_generation_scoring_agent",
-
     description=(
         """
         Analyzes a input text and creates the image generation prompt, generates the relevant images with imagen3 and scores the images."
@@ -52,7 +54,11 @@ image_generation_scoring_agent = SequentialAgent(
         3. Invoke the scoring_images_prompt agent to score the images
             """
     ),
-    sub_agents=[image_generation_prompt_agent, image_generation_agent, scoring_images_prompt],
+    sub_agents=[
+        image_generation_prompt_agent,
+        image_generation_agent,
+        scoring_images_prompt,
+    ],
 )
 
 

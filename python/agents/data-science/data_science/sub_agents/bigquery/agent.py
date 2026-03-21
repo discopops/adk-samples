@@ -16,15 +16,16 @@
 
 import logging
 import os
-from typing import Any, Dict, Optional
+from typing import Any
 
-from ...utils.utils import get_env_var, USER_AGENT
 from google.adk.agents import LlmAgent
 from google.adk.agents.callback_context import CallbackContext
 from google.adk.tools import BaseTool, ToolContext
 from google.adk.tools.bigquery import BigQueryToolset
 from google.adk.tools.bigquery.config import BigQueryToolConfig, WriteMode
 from google.genai import types
+
+from ...utils.utils import USER_AGENT
 from . import tools
 from .chase_sql import chase_db_tools
 from .prompts import return_instructions_bigquery
@@ -49,11 +50,10 @@ def setup_before_agent_call(callback_context: CallbackContext) -> None:
 
 def store_results_in_context(
     tool: BaseTool,
-    args: Dict[str, Any],
+    args: dict[str, Any],
     tool_context: ToolContext,
-    tool_response: Dict,
-) -> Optional[Dict]:
-
+    tool_response: dict,
+) -> dict | None:
     # We are setting a state for the data science agent to be able to use the
     # sql query results as context
     if tool.name == ADK_BUILTIN_BQ_EXECUTE_SQL_TOOL:

@@ -19,12 +19,13 @@ import os
 
 import vertexai
 from absl import app, flags
-from data_science.agent import root_agent
 from dotenv import load_dotenv
 from google.api_core import exceptions as google_exceptions
 from google.cloud import storage
 from vertexai import agent_engines
 from vertexai.preview.reasoning_engines import AdkApp
+
+from data_science.agent import root_agent
 
 FLAGS = flags.FLAGS
 flags.DEFINE_string("project_id", None, "GCP project ID.")

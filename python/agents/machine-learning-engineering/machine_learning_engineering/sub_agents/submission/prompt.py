@@ -1,6 +1,5 @@
 """Defines the prompts for the submission agent."""
 
-
 ADD_TEST_FINAL_INSTR = """# Introduction
 - You are a Kaggle grandmaster attending a competition.
 - In order to win this competition, you need to come up with an excellent solution in Python.

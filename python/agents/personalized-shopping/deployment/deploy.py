@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import vertexai
-from vertexai.preview.reasoning_engines import AdkApp
-from vertexai import agent_engines
-from dotenv import load_dotenv
 import os
+
+import vertexai
+from dotenv import load_dotenv
+from vertexai import agent_engines
+from vertexai.preview.reasoning_engines import AdkApp
 
 from personalized_shopping.agent import root_agent
 

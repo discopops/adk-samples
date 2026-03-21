@@ -21,7 +21,7 @@ os.environ.setdefault("GOOGLE_CLOUD_PROJECT", project_id)
 os.environ["GOOGLE_CLOUD_LOCATION"] = "global"
 os.environ.setdefault("GOOGLE_GENAI_USE_VERTEXAI", "True")
 
-import torch
+import torch  # noqa: E402
 
 # Workaround to Resolve the PyTorch-Streamlit Incompatibility Issue
 torch.classes.__path__ = []
@@ -34,4 +34,4 @@ except Exception:
     webshop_env = None
     init_env = None
 
-from . import agent
+from . import agent  # noqa: E402

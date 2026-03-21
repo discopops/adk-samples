@@ -18,7 +18,6 @@ import logging
 import os
 import tempfile
 import time
-from typing import Dict, List, Optional, Tuple
 
 from dotenv import load_dotenv
 from google import genai
@@ -43,7 +42,7 @@ VIDEO_CODEC = "libx264"
 GCS_VIDEO_FOLDER = "videos"
 
 
-def _get_storyline_schema(num_images: int) -> List[Dict]:
+def _get_storyline_schema(num_images: int) -> list[dict]:
     """Generates a storyline schema with a dynamic number of scenes.
 
     Args:
@@ -57,7 +56,9 @@ def _get_storyline_schema(num_images: int) -> List[Dict]:
 
     schema = []
     if num_images > 1:
-        schema.append({"name": "before", "generate": True, "step": 0, "duration": 3})
+        schema.append(
+            {"name": "before", "generate": True, "step": 0, "duration": 3}
+        )
 
     for i in range(num_images - 2):
         schema.append(
@@ -86,13 +87,13 @@ def _get_datetime_folder_path() -> str:
     Returns:
         A path in the format 'videos/YYYY-MM-DD/HH-MM-SS/'.
     """
-    now = datetime.datetime.now(datetime.timezone.utc)
+    now = datetime.datetime.now(datetime.UTC)
     date_folder = now.strftime("%Y-%m-%d")
     time_folder = now.strftime("%H-%M-%S")
     return f"{GCS_VIDEO_FOLDER}/{date_folder}/{time_folder}/"
 
 
-def _upload_to_gcs(video_bytes: bytes, filename: str) -> Optional[str]:
+def _upload_to_gcs(video_bytes: bytes, filename: str) -> str | None:
     """Uploads a video to Google Cloud Storage.
 
     Args:
@@ -108,7 +109,9 @@ def _upload_to_gcs(video_bytes: bytes, filename: str) -> Optional[str]:
             logging.error("GCP_PROJECT environment variable not set.")
             return None
 
-        bucket_name = os.getenv("GCS_BUCKET") or f"{project_id}-contentgen-static"
+        bucket_name = (
+            os.getenv("GCS_BUCKET") or f"{project_id}-contentgen-static"
+        )
         folder_path = _get_datetime_folder_path()
         blob_name = f"{folder_path}{filename}"
 
@@ -129,12 +132,14 @@ async def _load_single_clip(
     filename: str,
     tool_context: ToolContext,
     temp_dir: str,
-    storyline: List[Dict],
-) -> Optional[Tuple[VideoFileClip, str]]:
+    storyline: list[dict],
+) -> tuple[VideoFileClip, str] | None:
     """Loads and processes a single video clip artifact."""
     try:
         artifact = await tool_context.load_artifact(filename)
-        if not (artifact and artifact.inline_data and artifact.inline_data.data):
+        if not (
+            artifact and artifact.inline_data and artifact.inline_data.data
+        ):
             logging.warning("Could not load artifact data for %s.", filename)
             return None
 
@@ -162,11 +167,11 @@ async def _load_single_clip(
 
 
 async def _load_and_process_video_clips(
-    video_files: List[str],
+    video_files: list[str],
     num_images: int,
     tool_context: ToolContext,
     temp_dir: str,
-) -> Tuple[List[VideoFileClip], List[str]]:
+) -> tuple[list[VideoFileClip], list[str]]:
     """Loads video artifacts, processes them, and returns clips.
 
     Args:
@@ -186,7 +191,9 @@ async def _load_and_process_video_clips(
             logging.warning("Skipping video file with missing filename.")
             continue
 
-        result = await _load_single_clip(filename, tool_context, temp_dir, storyline)
+        result = await _load_single_clip(
+            filename, tool_context, temp_dir, storyline
+        )
         if result:
             clip, temp_path = result
             video_clips.append(clip)
@@ -197,11 +204,11 @@ async def _load_and_process_video_clips(
 
 async def _load_and_process_audio_clips(
     audio_file: str,
-    voiceover_file: Optional[str],
+    voiceover_file: str | None,
     final_duration: float,
     tool_context: ToolContext,
     temp_dir: str,
-) -> Optional[CompositeAudioClip]:
+) -> CompositeAudioClip | None:
     """Loads and processes audio and voiceover files into a composite clip.
 
     Args:
@@ -227,8 +234,14 @@ async def _load_and_process_audio_clips(
         # Voiceover
         if voiceover_file:
             vo_artifact = await tool_context.load_artifact(voiceover_file)
-            if vo_artifact and vo_artifact.inline_data and vo_artifact.inline_data.data:
-                temp_path = os.path.join(temp_dir, os.path.basename(voiceover_file))
+            if (
+                vo_artifact
+                and vo_artifact.inline_data
+                and vo_artifact.inline_data.data
+            ):
+                temp_path = os.path.join(
+                    temp_dir, os.path.basename(voiceover_file)
+                )
                 with open(temp_path, "wb") as f:
                     f.write(vo_artifact.inline_data.data)
                 vo_clip = AudioFileClip(temp_path)
@@ -243,17 +256,21 @@ async def _load_and_process_audio_clips(
 
 
 async def _combine_and_upload_video(
-    video_clips: List[VideoFileClip],
+    video_clips: list[VideoFileClip],
     audio_file: str,
-    voiceover_file: Optional[str],
+    voiceover_file: str | None,
     tool_context: ToolContext,
     temp_dir: str,
-) -> Optional[Dict[str, str]]:
+) -> dict[str, str] | None:
     """Combines video clips with audio and uploads the result."""
     try:
         final_clip = concatenate_videoclips(video_clips, method="compose")
         final_clip.audio = await _load_and_process_audio_clips(
-            audio_file, voiceover_file, final_clip.duration, tool_context, temp_dir
+            audio_file,
+            voiceover_file,
+            final_clip.duration,
+            tool_context,
+            temp_dir,
         )
 
         filename = f"combined_video_{int(time.time())}.mp4"
@@ -266,7 +283,9 @@ async def _combine_and_upload_video(
         gcs_uri = _upload_to_gcs(video_bytes, filename)
         await tool_context.save_artifact(
             filename,
-            genai.types.Part.from_bytes(data=video_bytes, mime_type="video/mp4"),
+            genai.types.Part.from_bytes(
+                data=video_bytes, mime_type="video/mp4"
+            ),
         )
 
         result = {"name": filename}
@@ -284,19 +303,20 @@ async def _combine_and_upload_video(
 
 
 async def combine(
-    video_files: List[str],
+    video_files: list[str],
     audio_file: str,
     num_images: int,
     tool_context: ToolContext,
-    voiceover_file: Optional[str] = None,
-) -> Optional[Dict[str, str]]:
+    voiceover_file: str | None = None,
+) -> dict[str, str] | None:
     """Combines videos, audio, and voiceover into a single file.
 
     Args:
         video_files (List[str]): A list of video artifact filenames.
         audio_file (str): The filename of the background audio artifact.
         num_images (int): The number of images in the storyline.
-        tool_context (ToolContext): The context for tool execution and artifact management.
+        tool_context (ToolContext): The context for tool execution and
+          artifact management.
         voiceover_file (Optional[str]): The filename of the voiceover artifact.
           Defaults to None.
 

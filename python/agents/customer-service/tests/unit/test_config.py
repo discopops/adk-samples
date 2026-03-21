@@ -12,9 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
-from customer_service.config import Config
 import logging
+
+import pytest
+
+from customer_service.config import Config
 
 
 @pytest.fixture

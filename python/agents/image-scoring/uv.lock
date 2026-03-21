@@ -9,7 +9,7 @@ resolution-markers = [
 
 [[package]]
 name = "agent-starter-pack"
-version = "0.20.4"
+version = "0.38.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "backoff" },
@@ -21,9 +21,9 @@ dependencies = [
     { name = "rich" },
     { name = "tomli", marker = "python_full_version < '3.11'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/83/0a/b5a8c3aaf57f2f1b16a6a211ada6e4541977db685c470a97e506a9ac8566/agent_starter_pack-0.20.4.tar.gz", hash = "sha256:b60560a30023dd8916a28c5735d90d8c9f10045ed02edd9451f20c33ec9691db", size = 11629084, upload-time = "2025-11-12T21:32:58.022Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/53/e2/84a3b260cf2459bb19f19de50ba0ccbb7235504cade0ac9a8bd853fd2d67/agent_starter_pack-0.38.0.tar.gz", hash = "sha256:6589a39e38de2d2e450c01b05e64570570b889da19d4a2d8a869561ed5a6c15e", size = 12159595, upload-time = "2026-02-18T19:42:34.228Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ee/af/7da52974c75996b62648f90deeb63a9d9a4337d1f8dbe86da69c15dd0c02/agent_starter_pack-0.20.4-py3-none-any.whl", hash = "sha256:9e205cf490f0402471680527060b66ee2d5386315a3dafa3c89411a47201de94", size = 3666138, upload-time = "2025-11-12T21:32:54.083Z" },
+    { url = "https://files.pythonhosted.org/packages/82/95/01db718f26f5b697bc8d801eadc0764dcf2d3d9dc38f45afb81626aa827c/agent_starter_pack-0.38.0-py3-none-any.whl", hash = "sha256:8d651e649f1b5e4aa8bf0eaa1e9c5531cb7ea11d80ce6524b9432d358f645b06", size = 3515189, upload-time = "2026-02-18T19:42:36.762Z" },
 ]
 
 [[package]]
@@ -1235,48 +1235,41 @@ dependencies = [
     { name = "pillow" },
 ]
 
-[package.optional-dependencies]
-jupyter = [
-    { name = "jupyter" },
-]
-lint = [
+[package.dev-dependencies]
+dev = [
+    { name = "agent-starter-pack" },
     { name = "codespell" },
+    { name = "jupyter" },
     { name = "mypy" },
+    { name = "nest-asyncio" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
     { name = "ruff" },
     { name = "types-pyyaml" },
     { name = "types-requests" },
 ]
 
-[package.dev-dependencies]
-dev = [
-    { name = "agent-starter-pack" },
-    { name = "nest-asyncio" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-]
-
 [package.metadata]
 requires-dist = [
-    { name = "codespell", marker = "extra == 'lint'", specifier = "~=2.4.1" },
     { name = "google-adk", specifier = ">=1.5.0" },
     { name = "google-cloud-aiplatform", extras = ["adk", "agent-engines"], specifier = ">=1.93.0" },
     { name = "google-cloud-logging", specifier = ">=3.12.0" },
-    { name = "jupyter", marker = "extra == 'jupyter'", specifier = "~=1.1.1" },
-    { name = "mypy", marker = "extra == 'lint'", specifier = "~=1.18.2" },
     { name = "pandas", specifier = ">=2.1.1" },
     { name = "pillow", specifier = ">=10.3.0" },
-    { name = "ruff", marker = "extra == 'lint'", specifier = ">=0.4.6" },
-    { name = "types-pyyaml", marker = "extra == 'lint'", specifier = "~=6.0.12.20240917" },
-    { name = "types-requests", marker = "extra == 'lint'", specifier = "~=2.32.4.20250913" },
 ]
-provides-extras = ["jupyter", "lint"]
 
 [package.metadata.requires-dev]
 dev = [
     { name = "agent-starter-pack", specifier = ">=0.14.1" },
+    { name = "codespell", specifier = "~=2.4.1" },
+    { name = "jupyter", specifier = "~=1.1.1" },
+    { name = "mypy", specifier = "~=1.18.2" },
     { name = "nest-asyncio", specifier = ">=1.6.0" },
     { name = "pytest", specifier = ">=8.3.4" },
     { name = "pytest-asyncio", specifier = ">=0.23.8" },
+    { name = "ruff", specifier = ">=0.4.6" },
+    { name = "types-pyyaml", specifier = "~=6.0.12.20240917" },
+    { name = "types-requests", specifier = "~=2.32.4.20250913" },
 ]
 
 [[package]]
@@ -2477,11 +2470,11 @@ wheels = [
 
 [[package]]
 name = "pyasn1"
-version = "0.6.1"
+version = "0.6.2"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/ba/e9/01f1a64245b89f039897cb0130016d79f77d52669aae6ee7b159a6c4c018/pyasn1-0.6.1.tar.gz", hash = "sha256:6f580d2bdd84365380830acf45550f2511469f673cb4a5ae3857a3170128b034", size = 145322, upload-time = "2024-09-10T22:41:42.55Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/fe/b6/6e630dff89739fcd427e3f72b3d905ce0acb85a45d4ec3e2678718a3487f/pyasn1-0.6.2.tar.gz", hash = "sha256:9b59a2b25ba7e4f8197db7686c09fb33e658b98339fadb826e9512629017833b", size = 146586, upload-time = "2026-01-16T18:04:18.534Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c8/f1/d6a797abb14f6283c0ddff96bbdd46937f64122b8c925cab503dd37f8214/pyasn1-0.6.1-py3-none-any.whl", hash = "sha256:0d632f46f2ba09143da3a8afe9e33fb6f92fa2320ab7e886e2d0f7672af84629", size = 83135, upload-time = "2024-09-11T16:00:36.122Z" },
+    { url = "https://files.pythonhosted.org/packages/44/b5/a96872e5184f354da9c84ae119971a0a4c221fe9b27a4d94bd43f2596727/pyasn1-0.6.2-py3-none-any.whl", hash = "sha256:1eb26d860996a18e9b6ed05e7aae0e9fc21619fcee6af91cca9bad4fbea224bf", size = 83371, upload-time = "2026-01-16T18:04:17.174Z" },
 ]
 
 [[package]]

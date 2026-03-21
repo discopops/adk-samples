@@ -73,7 +73,7 @@ This diagram outlines the agent's workflow, designed to provide informed and con
 
 #### How to upload my file to my RAG corpus
 
-The `rag/shared_libraries/prepare_corpus_and_data.py` script helps you set up a RAG corpus and upload an initial document. By default, it downloads Alphabet's 2024 10-K PDF and uploads it to a new corpus.
+The `rag/shared_libraries/prepare_corpus_and_data.py` script helps you set up a RAG corpus and upload an initial document. By default, it downloads Alphabet's 2025 10-K PDF and uploads it to a new corpus.
 
 1.  **Authenticate with your Google Cloud account:**
     ```bash
@@ -93,7 +93,7 @@ The `rag/shared_libraries/prepare_corpus_and_data.py` script helps you set up a 
         ```bash
         uv run python rag/shared_libraries/prepare_corpus_and_data.py
         ```
-        This will create a corpus named `Alphabet_10K_2024_corpus` (if it doesn't exist) and upload the PDF `goog-10-k-2024.pdf` downloaded from the URL specified in the script.
+        This will create a corpus named `Alphabet_10K_2025_corpus` (if it doesn't exist) and upload the PDF `goog-10-k-2025.pdf` downloaded from the URL specified in the script.
 
     *   **To upload a different PDF from a URL:**
         a. Open the `rag/shared_libraries/prepare_corpus_and_data.py` file.
@@ -170,13 +170,13 @@ Here's a quick example of how a user might interact with the agent:
 
 **Example 1: Document Information Retrieval**
 
-User: What are the key business segments mentioned in Alphabet's 2024 10-K report?
+User: What are the key business segments mentioned in Alphabet's 2025 10-K report?
 
-Agent: According to Alphabet's 2024 10-K report, the key business segments are:
+Agent: According to Alphabet's 2025 10-K report, the key business segments are:
 1. Google Services (including Google Search, YouTube, Google Maps, Play Store)
 2. Google Cloud (offering cloud computing services, data analytics, and AI solutions)
 3. Other Bets (including Waymo for autonomous driving technology)
-[Source: goog-10-k-2024.pdf]
+[Source: goog-10-k-2025.pdf]
 
 ## Evaluating the Agent
 
@@ -195,7 +195,7 @@ The evaluation framework consists of three key components:
 1. **test_eval.py**: The main test script that orchestrates the evaluation process. It uses the `AgentEvaluator` from Google ADK to run the agent against a test dataset and assess its performance based on predefined criteria.
 
 2. **conversation.test.json**: Contains a sequence of test cases structured as a conversation. Each test case includes:
-   - A user query (e.g., questions about Alphabet's 10-K report)
+   - A user query (e.g., questions about Alphabet's 2025 10-K report)
    - Expected tool usage (which tools the agent should call and with what parameters)
    - Reference answers (ideal responses the agent should provide)
 
@@ -250,8 +250,8 @@ After deploying the agent, follow these steps to test it:
      ```
    - Run the permissions script:
      ```bash
-     chmod +x deployment/grant_permissions.sh
-     ./deployment/grant_permissions.sh
+     chmod +x rag/shared_libraries/grant_permissions.sh
+     ./rag/shared_libraries/grant_permissions.sh
      ```
    This script will:
    - Read the environment variables from your `.env` file
@@ -268,33 +268,27 @@ After deploying the agent, follow these steps to test it:
    - Send a series of test queries
    - Display the agent's responses with proper formatting
 
-The test script includes example queries about Alphabet's 10-K report. You can modify the queries in `deployment/run.py` to test different aspects of your deployed agent.
+The test script includes example queries about Alphabet's 2025 10-K report. You can modify the queries in `deployment/run.py` to test different aspects of your deployed agent.
 
-### Alternative: Using Agent Starter Pack
+### Recommended: Using Agent Starter Pack
 
-You can also use the [Agent Starter Pack](https://goo.gle/agent-starter-pack) to create a production-ready version of this agent with additional deployment options:
+The Agent Starter Pack is the recommended way to create and deploy a production-ready version of this agent. We have built custom lifecycle hooks into this template so that the Agent Starter Pack automatically handles building your RAG corpus and granting IAM permissions during deployment.
 
+To create your project using `uv`:
 ```bash
-# Create and activate a virtual environment
-python -m venv .venv && source .venv/bin/activate # On Windows: .venv\Scripts\activate
-
-# Install the starter pack and create your project
-pip install --upgrade agent-starter-pack
-agent-starter-pack create my-rag-agent -a adk@rag
+uvx agent-starter-pack create my-rag-agent -a adk@RAG -d agent_engine -ds vertex_ai_search
+cd my-rag-agent
 ```
 
-<details>
-<summary>⚡️ Alternative: Using uv</summary>
-
-If you have [`uv`](https://github.com/astral-sh/uv) installed, you can create and set up your project with a single command:
+Next, run the installation command. This will prompt you to automatically build the sample RAG Corpus and configure your `.env` file:
 ```bash
-uvx agent-starter-pack create my-rag-agent -a adk@rag
+make install
 ```
-This command handles creating the project without needing to pre-install the package into a virtual environment.
 
-</details>
-
-The starter pack will prompt you to select deployment options and provides additional production-ready features including automated CI/CD deployment scripts.
+Finally, deploy the agent to Google Cloud. This will package your agent, push it to Vertex AI Agent Engine, and automatically grant the new Agent Identity permissions to query your RAG Corpus:
+```bash
+make backend
+```
 
 ## Customization
 

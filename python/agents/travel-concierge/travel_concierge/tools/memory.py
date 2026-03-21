@@ -14,10 +14,10 @@
 
 """The 'memorize' tool for several agents to affect session states."""
 
-from datetime import datetime
 import json
 import os
-from typing import Dict, Any
+from datetime import datetime
+from typing import Any
 
 from google.adk.agents.callback_context import CallbackContext
 from google.adk.sessions.state import State
@@ -26,7 +26,8 @@ from google.adk.tools import ToolContext
 from travel_concierge.shared_libraries import constants
 
 SAMPLE_SCENARIO_PATH = os.getenv(
-    "TRAVEL_CONCIERGE_SCENARIO", "travel_concierge/profiles/itinerary_empty_default.json"
+    "TRAVEL_CONCIERGE_SCENARIO",
+    "travel_concierge/profiles/itinerary_empty_default.json",
 )
 
 
@@ -86,7 +87,7 @@ def forget(key: str, value: str, tool_context: ToolContext):
     return {"status": f'Removed "{key}": "{value}"'}
 
 
-def _set_initial_states(source: Dict[str, Any], target: State | dict[str, Any]):
+def _set_initial_states(source: dict[str, Any], target: State | dict[str, Any]):
     """
     Setting the initial session state given a JSON object of states.
 
@@ -117,9 +118,9 @@ def _load_precreated_itinerary(callback_context: CallbackContext):
 
     Args:
         callback_context: The callback context.
-    """    
+    """
     data = {}
-    with open(SAMPLE_SCENARIO_PATH, "r") as file:
+    with open(SAMPLE_SCENARIO_PATH) as file:
         data = json.load(file)
         print(f"\nLoading Initial State: {data}\n")
 

@@ -1,10 +1,10 @@
 from google.adk.agents import Agent
+
 from ... import config
 from ..tools.fetch_policy_tool import get_policy
+from .prompt import SCORING_PROMPT
 from .tools.get_images_tool import get_image
 from .tools.set_score_tool import set_score
-from .prompt import SCORING_PROMPT
-
 
 scoring_images_prompt = Agent(
     name="scoring_images_prompt",

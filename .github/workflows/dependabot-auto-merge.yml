@@ -43,13 +43,13 @@ jobs:
         run: |
           PR_NUMBER=$(gh pr list \
             --repo ${{ github.repository }} \
-            --head ${{ github.event.workflow_run.head_branch }} \
+            --head ${GITHUB_EVENT_WORKFLOW_RUN_HEAD_BRANCH} \
             --state open \
             --json number \
             --jq '.[0].number')
 
           if [ -z "$PR_NUMBER" ] || [ "$PR_NUMBER" = "null" ]; then
-            echo "No open PR found for branch ${{ github.event.workflow_run.head_branch }}"
+            echo "No open PR found for branch ${GITHUB_EVENT_WORKFLOW_RUN_HEAD_BRANCH}"
             exit 0
           fi
 
@@ -57,12 +57,13 @@ jobs:
           echo "Found PR #$PR_NUMBER"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_EVENT_WORKFLOW_RUN_HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
 
       - name: Check if PR is from Dependabot
         if: steps.pr.outputs.number != ''
         id: check
         run: |
-          PR_INFO=$(gh pr view ${{ steps.pr.outputs.number }} \
+          PR_INFO=$(gh pr view ${STEPS_PR_OUTPUTS_NUMBER} \
             --repo ${{ github.repository }} \
             --json author,mergeable,state)
 
@@ -85,6 +86,7 @@ jobs:
           echo "state=$PR_STATE" >> $GITHUB_OUTPUT
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          STEPS_PR_OUTPUTS_NUMBER: ${{ steps.pr.outputs.number }}
 
       - name: Checkout code
         if: steps.check.outputs.is_dependabot == 'true'
@@ -98,7 +100,7 @@ jobs:
         id: check-agent
         run: |
           # Get the base branch for comparison
-          BASE_BRANCH=$(gh pr view ${{ steps.pr.outputs.number }} --repo ${{ github.repository }} --json baseRefName --jq '.baseRefName')
+          BASE_BRANCH=$(gh pr view ${STEPS_PR_OUTPUTS_NUMBER} --repo ${{ github.repository }} --json baseRefName --jq '.baseRefName')
           git fetch origin $BASE_BRANCH
 
           # Get all changed files
@@ -132,14 +134,16 @@ jobs:
           echo "has_tests=$HAS_AUTOMATED_TESTS" >> $GITHUB_OUTPUT
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          STEPS_PR_OUTPUTS_NUMBER: ${{ steps.pr.outputs.number }}
 
       - name: Update branch if needed
         if: steps.check.outputs.is_dependabot == 'true' && steps.check-agent.outputs.has_tests == 'true' && steps.check.outputs.mergeable == 'CONFLICTING'
         run: |
           echo "Branch needs update, updating..."
-          gh pr comment ${{ steps.pr.outputs.number }} --body "@dependabot rebase"
+          gh pr comment ${STEPS_PR_OUTPUTS_NUMBER} --body "@dependabot rebase"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          STEPS_PR_OUTPUTS_NUMBER: ${{ steps.pr.outputs.number }}
 
       - name: Wait for all checks to complete
         if: steps.check.outputs.is_dependabot == 'true' && steps.check-agent.outputs.has_tests == 'true' && steps.check.outputs.mergeable != 'CONFLICTING'
@@ -153,7 +157,7 @@ jobs:
 
           while [ $elapsed -lt $MAX_WAIT_TIME ]; do
             # Get PR details via API
-            PR_DATA=$(gh api repos/${{ github.repository }}/pulls/${{ steps.pr.outputs.number }})
+            PR_DATA=$(gh api repos/${{ github.repository }}/pulls/${STEPS_PR_OUTPUTS_NUMBER})
 
             # Get commit SHA
             HEAD_SHA=$(echo "$PR_DATA" | jq -r '.head.sha')
@@ -193,6 +197,7 @@ jobs:
           echo "all_passed=false" >> $GITHUB_OUTPUT
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          STEPS_PR_OUTPUTS_NUMBER: ${{ steps.pr.outputs.number }}
 
       - name: Merge PR
         if: |
@@ -201,7 +206,8 @@ jobs:
           steps.wait-checks.outputs.all_passed == 'true' &&
           steps.check.outputs.mergeable != 'CONFLICTING'
         run: |
-          echo "All checks passed, merging PR #${{ steps.pr.outputs.number }}"
-          gh pr merge ${{ steps.pr.outputs.number }} --repo ${{ github.repository }} --squash
+          echo "All checks passed, merging PR #${STEPS_PR_OUTPUTS_NUMBER}"
+          gh pr merge ${STEPS_PR_OUTPUTS_NUMBER} --repo ${{ github.repository }} --squash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          STEPS_PR_OUTPUTS_NUMBER: ${{ steps.pr.outputs.number }}

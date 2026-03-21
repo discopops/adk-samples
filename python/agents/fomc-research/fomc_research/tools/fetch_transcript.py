@@ -47,7 +47,9 @@ async def fetch_transcript_tool(tool_context: ToolContext) -> dict:
             "error_message": "Failed to download PDFs from GCS",
         }
 
-    text = await file_utils.extract_text_from_pdf_artifact(pdf_path, tool_context)
+    text = await file_utils.extract_text_from_pdf_artifact(
+        pdf_path, tool_context
+    )
     filename = "transcript_fulltext"
     version = await tool_context.save_artifact(
         filename=filename, artifact=Part(text=text)

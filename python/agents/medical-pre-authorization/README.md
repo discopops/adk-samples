@@ -5,6 +5,8 @@
 
 The Medical Pre-Authorization Agent is an intelligent, automated workflow designed to streamline the medical pre-authorization process on Google Cloud. It leverages a multi-agent system to efficiently process a patient's request, from initial document submission to final report generation.
 
+This sample is compatible with the Agent Starter Pack (ASP) and can be used as a base for creating production-ready agent deployments.
+
 ## How It Works
 The workflow is orchestrated by a primary Insurance Agent, built with Vertex AI Agent Builder and the ADK framework, which manages the end-to-end logic.
 
@@ -41,6 +43,19 @@ The key features of the Medical Pre-Authorization Agent include:
 This diagram shows the detailed architecture of the agents and tools used
 to implement this workflow.
 <img src="pre-auth-ai-agent-architrecture.png" alt="Medical Pre-Authurization Agent" width="800"/>
+
+## Using Agent Starter Pack (ASP)
+
+Use the **Agent Starter Pack** to scaffold a production-ready version of this agent with additional deployment and configuration options.
+
+Create and activate a virtual environment:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+# Windows:
+.venv\Scripts\activate
+```
 
 ## Setup and Installation
 
@@ -127,7 +142,7 @@ Hello! I'm a pre-authorization agent. I can help you process pre-authorization r
 
 ```
 
-### Example Interaction
+## Example Interaction
 
 Below is an example interaction with the Medical Pre-Authorization Agent. 
 

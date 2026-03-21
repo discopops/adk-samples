@@ -14,17 +14,23 @@
 
 """Functions for specifying goals and reward calculations."""
 
-from collections import defaultdict
 import itertools
 import random
-from rich import print
+from collections import defaultdict
+
 import spacy
+from rich import print
 from thefuzz import fuzz
+
 from .normalize import normalize_color
 
 nlp = spacy.load("en_core_web_sm")
 
 PRICE_RANGE = [10.0 * i for i in range(1, 100)]
+MIN_PRICE_RANGE = 2
+MAX_TITLE_SCORE = 0.2
+MIN_TITLE_SCORE = 0.1
+SCORE_GOAL = 85
 
 
 def get_goals(all_products, product_prices, human_goals=True):
@@ -51,9 +57,11 @@ def get_human_goals(all_products, product_prices):
             if product_prices is not None:
                 price = product_prices[asin]
                 price_range = [p for p in PRICE_RANGE if p > price][:4]
-                if len(price_range) >= 2:
+                if len(price_range) >= MIN_PRICE_RANGE:
                     _, price_upper = sorted(random.sample(price_range, 2))
-                    price_text = f", and price lower than {price_upper:.2f} dollars"
+                    price_text = (
+                        f", and price lower than {price_upper:.2f} dollars"
+                    )
                 else:
                     price_upper = 1000000
                     price_text = ""
@@ -67,7 +75,8 @@ def get_human_goals(all_products, product_prices):
                     "query": item["query"],
                     "name": item["name"],
                     "product_category": item["product_category"],
-                    "instruction_text": product["instruction"].strip(".") + price_text,
+                    "instruction_text": product["instruction"].strip(".")
+                    + price_text,
                     "attributes": attributes,
                     "price_upper": price_upper,
                     "goal_options": product["instruction_options"],
@@ -86,7 +95,10 @@ def get_synthetic_goals(all_products, product_prices):
     goals = []
     cnt_atts = defaultdict(int)
     for product in all_products:
-        if "instruction_text" not in product or product["instruction_text"] is None:
+        if (
+            "instruction_text" not in product
+            or product["instruction_text"] is None
+        ):
             continue
         product_goals = []
         asin = product["asin"]
@@ -96,7 +108,7 @@ def get_synthetic_goals(all_products, product_prices):
         if product_prices is not None:
             price = product_prices[asin]
             price_range = [p for p in PRICE_RANGE if p > price][:4]
-            if len(price_range) >= 2:
+            if len(price_range) >= MIN_PRICE_RANGE:
                 _, price_upper = sorted(random.sample(price_range, 2))
                 price_text = f", and price lower than {price_upper:.2f} dollars"
             else:
@@ -111,14 +123,18 @@ def get_synthetic_goals(all_products, product_prices):
         options = product["options"]
         option_names = sorted(options)
         combinations = list(
-            itertools.product(*(options[option_name] for option_name in option_names))
+            itertools.product(
+                *(options[option_name] for option_name in option_names)
+            )
         )
         for combination in combinations:
-            goal_options = dict()
+            goal_options = {}
             for i, o in enumerate(combination):
                 #                option_text.append(f'{option_names[i]}: {o}')
                 goal_options[option_names[i]] = o
-            option_text = ", and ".join([f"{k}: {v}" for k, v in goal_options.items()])
+            option_text = ", and ".join(
+                [f"{k}: {v}" for k, v in goal_options.items()]
+            )
             option_text = " with " + option_text if option_text else ""
             product_goals.append(
                 {
@@ -138,23 +154,27 @@ def get_synthetic_goals(all_products, product_prices):
                 cnt_atts[att] += 1
         goals += product_goals
     for goal in goals:
-        goal["weight"] = sum(1.0 / cnt_atts[att] for att in goal["attributes"]) / len(
-            goal["attributes"]
-        )
+        goal["weight"] = sum(
+            1.0 / cnt_atts[att] for att in goal["attributes"]
+        ) / len(goal["attributes"])
     return goals
 
 
 def get_type_reward(purchased_product, goal):
     """Determines the type reward - captures whether chosen product is in the same category"""
     query_match = purchased_product["query"] == goal["query"]
+    min_category_matches = 2
 
     # Check number of unique categories that match, ignoring order
     purchased_product_category = [
         x.strip() for x in purchased_product["product_category"].split("›")
     ]
-    goal_product_category = [x.strip() for x in goal["product_category"].split("›")]
+    goal_product_category = [
+        x.strip() for x in goal["product_category"].split("›")
+    ]
     category_match = (
-        len(set(purchased_product_category) & set(goal_product_category)) >= 2
+        len(set(purchased_product_category) & set(goal_product_category))
+        >= min_category_matches
     )
 
     # Determine whether types align based on product name similarity
@@ -184,22 +204,22 @@ def get_type_reward(purchased_product, goal):
     r_type = 1.0
 
     # Adjust r_type score based on query, category title matching/scores
-    match = query_match or category_match or title_score > 0.2
+    match = query_match or category_match or title_score > MAX_TITLE_SCORE
     if not match:
         r_type = 0.5
 
-    if title_score < 0.1:
+    if title_score < MIN_TITLE_SCORE:
         r_type = 0.1
 
     if title_score == 0.0:
         r_type = 0.0
 
-    return dict(
-        r_type=r_type,
-        query_match=query_match,
-        category_match=category_match,
-        title_score=title_score,
-    )
+    return {
+        "r_type": r_type,
+        "query_match": query_match,
+        "category_match": category_match,
+        "title_score": title_score,
+    }
 
 
 def get_attribute_reward(purchased_product, goal):
@@ -213,7 +233,7 @@ def get_attribute_reward(purchased_product, goal):
         # Check whether goal attribute found in purchased product attribute list
         for p_attr in purchased_attrs:
             score = fuzz.token_set_ratio(p_attr, g_attr)
-            if score > 85:
+            if score > SCORE_GOAL:
                 num_attr_matches += 1
                 matched = True
                 break
@@ -240,12 +260,16 @@ def get_option_reward(purchased_options, goal_options):
     for g_option in goal_options:
         for p_option in purchased_options:
             score = fuzz.token_set_ratio(p_option, g_option)
-            if score > 85:
+            if score > SCORE_GOAL:
                 num_option_matches += 1
                 break
 
     # Calculate option reward as fraction of goal options hit
-    r_option = num_option_matches / len(goal_options) if len(goal_options) > 0 else None
+    r_option = (
+        num_option_matches / len(goal_options)
+        if len(goal_options) > 0
+        else None
+    )
     return r_option, num_option_matches
 
 
@@ -253,7 +277,9 @@ def get_reward(purchased_product, goal, price, options, **kwargs):
     """Get cumulative reward score for purchased product and goal"""
     r_type_dict = get_type_reward(purchased_product, goal)
 
-    r_price = (price <= goal["price_upper"]) if goal["price_upper"] > 0 else None
+    r_price = (
+        (price <= goal["price_upper"]) if goal["price_upper"] > 0 else None
+    )
 
     r_att, num_attr_matches = get_attribute_reward(purchased_product, goal)
 

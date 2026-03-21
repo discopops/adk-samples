@@ -14,8 +14,8 @@
 
 """Defines tools for brand search optimization agent"""
 
-from google.cloud import bigquery
 from google.adk.tools import ToolContext
+from google.cloud import bigquery
 
 from ..shared_libraries import constants
 

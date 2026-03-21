@@ -13,30 +13,28 @@
 # limitations under the License.
 
 import logging
-from google.adk.agents import LlmAgent, SequentialAgent, Agent, ParallelAgent
+
+from google.adk.agents import Agent, LlmAgent, ParallelAgent, SequentialAgent
 from google.adk.tools import google_search
-from google.genai import types
-from .tools import (
-    publish_email_announcement,
-    publish_slack_message,
-    create_calendar_event,
-    gmail_mcp_tool,
-    slack_mcp_tool,
-    calendar_mcp_tool,
-)
+
 from .prompts.prompts import (
+    CALENDAR_PUBLISHER_INSTRUCTION,
     EMAIL_DRAFTER_INSTRUCTION,
     EMAIL_PUBLISHER_INSTRUCTION,
-    SLACK_DRAFTER_INSTRUCTION,
-    SLACK_PUBLISHER_INSTRUCTION,
     EVENT_DETAILS_EXTRACTOR_INSTRUCTION,
-    CALENDAR_PUBLISHER_INSTRUCTION,
-    SUMMARY_AGENT_INSTRUCTION,
     MESSAGE_ENHANCER_INSTRUCTION,
     ROOT_AGENT_INSTRUCTION,
+    SLACK_DRAFTER_INSTRUCTION,
+    SLACK_PUBLISHER_INSTRUCTION,
+    SUMMARY_AGENT_INSTRUCTION,
+)
+from .tools import (
+    create_calendar_event,
+    publish_email_announcement,
+    publish_slack_message,
 )
 
-logger = logging.getLogger('google_adk.' + __name__)
+logger = logging.getLogger("google_adk." + __name__)
 
 email_drafting_agent = SequentialAgent(
     name="email_drafting_agent",
@@ -46,7 +44,7 @@ email_drafting_agent = SequentialAgent(
             name="email_drafter",
             model="gemini-2.5-flash",
             instruction=EMAIL_DRAFTER_INSTRUCTION,
-            output_key="drafted_email"
+            output_key="drafted_email",
         ),
         Agent(
             name="email_publisher",
@@ -56,12 +54,12 @@ email_drafting_agent = SequentialAgent(
             tools=[
                 publish_email_announcement,
                 # The gmail_mcp_tool shows an example MCP setup.
-                # MCP Tools can be used to integrate with email providers that have MCP servers. 
+                # MCP Tools can be used to integrate with email providers that have MCP servers.
                 # Users can uncomment if they connect their own MCP credentials and configs.
                 # gmail_mcp_tool,
-            ]
-        )
-    ]
+            ],
+        ),
+    ],
 )
 
 slack_drafting_agent = SequentialAgent(
@@ -72,7 +70,7 @@ slack_drafting_agent = SequentialAgent(
             name="slack_drafter",
             model="gemini-2.5-flash",
             instruction=SLACK_DRAFTER_INSTRUCTION,
-            output_key="drafted_slack_message"
+            output_key="drafted_slack_message",
         ),
         Agent(
             name="slack_publisher",
@@ -82,12 +80,12 @@ slack_drafting_agent = SequentialAgent(
             tools=[
                 publish_slack_message,
                 # The slack_mcp_tool shows an example MCP setup.
-                # MCP Tools can be used to integrate with Slack. 
+                # MCP Tools can be used to integrate with Slack.
                 # Users can uncomment if they connect their own MCP credentials and configs.
                 # slack_mcp_tool,
-            ]
-        )
-    ]
+            ],
+        ),
+    ],
 )
 
 calendar_creation_agent = SequentialAgent(
@@ -98,7 +96,7 @@ calendar_creation_agent = SequentialAgent(
             name="event_details_extractor",
             model="gemini-2.5-flash",
             instruction=EVENT_DETAILS_EXTRACTOR_INSTRUCTION,
-            output_key="event_details"
+            output_key="event_details",
         ),
         Agent(
             name="calendar_publisher",
@@ -108,12 +106,12 @@ calendar_creation_agent = SequentialAgent(
             tools=[
                 create_calendar_event,
                 # The calendar_mcp_tool shows an example MCP setup.
-                # MCP Tools can be used to integrate with calendar services. 
+                # MCP Tools can be used to integrate with calendar services.
                 # Users can uncomment if they connect their own MCP credentials and configs.
                 # calendar_mcp_tool,
-            ]
-        )
-    ]
+            ],
+        ),
+    ],
 )
 
 broadcast_agent = ParallelAgent(
@@ -122,8 +120,8 @@ broadcast_agent = ParallelAgent(
     sub_agents=[
         email_drafting_agent,
         slack_drafting_agent,
-        calendar_creation_agent
-    ]
+        calendar_creation_agent,
+    ],
 )
 
 summary_agent = LlmAgent(
@@ -144,11 +142,11 @@ main_flow_agent = SequentialAgent(
             model="gemini-2.5-flash",
             instruction=MESSAGE_ENHANCER_INSTRUCTION,
             tools=[google_search],
-            output_key="enhanced_message"
+            output_key="enhanced_message",
         ),
         broadcast_agent,
-        summary_agent
-    ]
+        summary_agent,
+    ],
 )
 
 root_agent = Agent(
@@ -156,7 +154,5 @@ root_agent = Agent(
     description="Aura: Your assistant for broadcasting important announcements across the company.",
     model="gemini-2.5-flash",
     instruction=ROOT_AGENT_INSTRUCTION,
-    sub_agents=[
-        main_flow_agent
-    ]
+    sub_agents=[main_flow_agent],
 )

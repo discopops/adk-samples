@@ -17,22 +17,22 @@ import asyncio
 import json
 import logging
 import os
-from typing import Awaitable, List, NotRequired, Optional, TypedDict
+from collections.abc import Awaitable
+from typing import NotRequired, TypedDict
 
-from content_gen_agent.utils.evaluate_media import (
-    calculate_evaluation_score,
-)
+from dotenv import load_dotenv
+from google.adk.tools import ToolContext
+from google.genai import types
+
+from content_gen_agent.utils.evaluate_media import calculate_evaluation_score
 from content_gen_agent.utils.gemini_utils import (
     call_gemini_image_api,
     initialize_gemini_client,
 )
 from content_gen_agent.utils.images import (
     IMAGE_MIME_TYPE,
-    load_image_resource,
+    ensure_image_artifact,
 )
-from dotenv import load_dotenv
-from google.adk.tools import ToolContext
-from google.genai import types
 
 # --- Configuration ---
 logging.basicConfig(
@@ -45,7 +45,6 @@ GCP_PROJECT = os.getenv("GCP_PROJECT")
 
 IMAGE_GEN_MODEL_GEMINI = "gemini-3-pro-image-preview"
 
-STORYLINE_MODEL = "gemini-2.5-pro"
 MAX_RETRIES = 3
 ASSET_SHEET_FILENAME = "asset_sheet.png"
 LOGO_GCS_URI_BASE = "branding_logos/logo.png"
@@ -66,7 +65,8 @@ def get_bucket() -> str:
         if GCP_PROJECT:
             bucket = f"{GCP_PROJECT}-contentgen-static"
             logging.warning(
-                "GCS_BUCKET environment variable not set; defaulting to %s", bucket
+                "GCS_BUCKET environment variable not set; defaulting to %s",
+                bucket,
             )
             return bucket
         raise RuntimeError(
@@ -75,7 +75,7 @@ def get_bucket() -> str:
 
 
 GCS_BUCKET = get_bucket()
-LOGO_GCS_URI = f"{GCS_BUCKET}/{LOGO_GCS_URI_BASE}"
+LOGO_GCS_URI = f"gs://{GCS_BUCKET}/{LOGO_GCS_URI_BASE}"
 
 client = initialize_gemini_client()
 
@@ -89,14 +89,14 @@ class ImageGenerationResult(TypedDict):
 
 async def generate_one_image(
     prompt: str,
-    input_images: List[types.Part],
+    input_images: list[types.Part],
     filename_prefix: str,
 ) -> ImageGenerationResult:
     """Generates a single image using Gemini, handling retries.
 
     Args:
         prompt (str): The prompt for image generation.
-        input_images (List[types.Part]): A list of input images as Part objects.
+        input_images (List[types.Part]): A list of input images.
         filename_prefix (str): The prefix for the output filename.
 
     Returns:
@@ -124,7 +124,9 @@ async def generate_one_image(
     if not successful_attempts:
         return {
             "status": "failed",
-            "detail": f"All image generation attempts failed for prompt: '{prompt}'.",
+            "detail": (
+                f"All image generation attempts failed for prompt: '{prompt}'."
+            ),
         }
 
     best_attempt = max(
@@ -135,7 +137,9 @@ async def generate_one_image(
     if best_attempt.get("evaluation").decision != "Pass":
         score = calculate_evaluation_score(best_attempt["evaluation"])
         logging.warning(
-            "No image passed evaluation for '%s'. Best score: %s", prompt, score
+            "No image passed evaluation for '%s'. Best score: %s",
+            prompt,
+            score,
         )
 
     filename = f"{filename_prefix}.png"
@@ -147,34 +151,8 @@ async def generate_one_image(
     }
 
 
-async def _load_generation_resources(
-    tool_context: ToolContext,
-) -> tuple[Optional[types.Part], Optional[types.Part], Optional[str]]:
-    """Loads the logo and asset sheet images."""
-    logo_image_bytes, _, logo_mime = await load_image_resource(
-        "gcs", f"gs://{LOGO_GCS_URI}", tool_context
-    )
-    if not logo_image_bytes:
-        return None, None, f"Failed to load logo from '{LOGO_GCS_URI}'."
-    logo_image = types.Part.from_bytes(data=logo_image_bytes, mime_type=logo_mime)
-
-    try:
-        asset_sheet_bytes, _, asset_sheet_mime = await load_image_resource(
-            "artifact", ASSET_SHEET_FILENAME, tool_context
-        )
-        if not asset_sheet_bytes:
-            return None, None, "Asset sheet artifact is empty."
-        asset_sheet_image = types.Part.from_bytes(
-            data=asset_sheet_bytes, mime_type=asset_sheet_mime
-        )
-    except (FileNotFoundError, ValueError) as e:
-        return None, None, f"Failed to load asset sheet: {e}"
-
-    return logo_image, asset_sheet_image, None
-
-
 async def _save_generated_images(
-    results: List[ImageGenerationResult], tool_context: ToolContext
+    results: list[ImageGenerationResult], tool_context: ToolContext
 ) -> None:
     """Saves generated images to the tool context."""
     save_tasks = []
@@ -185,7 +163,9 @@ async def _save_generated_images(
             save_tasks.append(
                 tool_context.save_artifact(
                     filename,
-                    types.Part.from_bytes(data=image_bytes, mime_type=IMAGE_MIME_TYPE),
+                    types.Part.from_bytes(
+                        data=image_bytes, mime_type=IMAGE_MIME_TYPE
+                    ),
                 )
             )
             result["detail"] = f"Image stored as {filename}."
@@ -205,60 +185,131 @@ def _create_image_generation_task(
     """Creates a task for generating a single image."""
     filename_prefix = f"{scene_num}_"
     if is_logo_scene:
-        logo_prompt = (
-            f"Place the company logo centered on the following background: {prompt}"
-        )
+        logo_prompt = f"Place the company logo centered on the following background: {prompt}"
         return generate_one_image(logo_prompt, [logo_image], filename_prefix)
 
     return generate_one_image(prompt, [asset_sheet_image], filename_prefix)
 
 
 async def generate_images_from_storyline(
-    prompts: List[str],
+    prompts: list[str],
     tool_context: ToolContext,
-    scene_numbers: Optional[List[int]] = None,
+    scene_numbers: list[int] | None = None,
+    logo_filename: str = LOGO_GCS_URI,
+    asset_sheet_filename: str = ASSET_SHEET_FILENAME,
     logo_prompt_present: bool = True,
-) -> List[str]:
-    """Generates images for a commercial storyboard based on a visual style guide.
+) -> list[str]:
+    """
+    Generates images for a commercial storyboard based on a visual style guide.
 
     Args:
-        prompts (List[str]): a list of prompts in the order of the scene numbers, one
-          prompt for each scene's image.
-            - If logo_prompt_present is true, the last prompt is for the logo background.
-            - Make sure to split up each scene's prompt and make them independent of each other.
-            - Each prompt should only describe the first frame of that particular scene in detail.
-                        - Make sure to mention that each image should fill the space and not have
-              empty whitespace around it.
+        prompts (List[str]): a list of prompts in the order of the scene
+          numbers, one prompt for each scene's image.
+            - If logo_prompt_present is true, the last prompt is for the logo
+              background.
+            - Make sure to split up each scene's prompt and make them
+              independent of each other.
+            - Each prompt should only describe the first frame of that
+              particular scene in detail.
+            - Make sure to mention that each image should fill the space and
+              not have empty whitespace around it.
             - Never include children.
         tool_context (ToolContext): Context for saving artifacts.
-        scene_numbers (Optional[List[int]]): A list of scene numbers to generate
-          images for.
+        scene_numbers (Optional[List[int]]): A list of scene numbers to
+          generate images for.
           - If None or empty, images will be
           - generated for all scenes.
           - Note that scene numbers are 0-based.
           - Defaults to None.
-        logo_prompt_present (bool): Whether the prompts list contains a prompt for the
-          logo scene. You must set this to false if the prompts list does not
-          contain a prompt for the logo scene. If true, the logo prompt must be
-          last. Defaults to True.
+        logo_filename (str): The filename of an image containing the logo to
+          use in the logo scene. The image must be provided by the user.
+          logo_filename can be a GCS URI if referencing an image in Google
+          Cloud Storage.  Defaults to a GCS URI constructed from environment
+          variables pointing to "branding_logos/logo.png".
+        asset_sheet_filename (str): The filename of an asset sheet that was
+          previously saved as an artifact. Make sure to enter the appropriate
+          filename if the user provided their own asset sheet.  Defaults to
+          asset_sheet.png if the user did not provide their own. Can be a GCS
+          URI if referencing an image in Google Cloud Storage.
+        logo_prompt_present (bool): Whether the prompts list contains a prompt
+          for the logo scene. IMPORTANT: you MUST set this to False if you are
+          only regenerating scenes other than the logo scene. If True, the
+          prompt for the logo scene must be listed last in prompts. Defaults
+          to True.
 
     Returns:
         A list of JSON strings with the status of each image generation.
     """
     if not client:
         return [
-            json.dumps({"status": "failed", "detail": "Gemini client not initialized."})
+            json.dumps(
+                {"status": "failed", "detail": "Gemini client not initialized."}
+            )
         ]
 
-    logo_image, asset_sheet_image, error_msg = await _load_generation_resources(
-        tool_context
-    )
-    if error_msg:
-        return [json.dumps({"status": "failed", "detail": error_msg})]
+    logo_image = None
+    if logo_prompt_present:
+        if not logo_filename:
+            return [
+                json.dumps(
+                    {
+                        "status": "failed",
+                        "detail": (
+                            "logo_filename must be set if logo_prompt_present is True."
+                        ),
+                    }
+                )
+            ]
+        logo_filename = await ensure_image_artifact(logo_filename, tool_context)
+        if not logo_filename:
+            return [
+                json.dumps(
+                    {
+                        "status": "failed",
+                        "detail": f"Failed to load logo from '{logo_filename}'",
+                    }
+                )
+            ]
+        logo_image = await tool_context.load_artifact(logo_filename)
+        if not logo_image:
+            return [
+                json.dumps(
+                    {
+                        "status": "failed",
+                        "detail": (
+                            f"Failed to load logo content from '{logo_filename}'."
+                        ),
+                    }
+                )
+            ]
 
-    # We know these are not None if error_msg is None.
-    assert logo_image is not None
-    assert asset_sheet_image is not None
+    asset_sheet_filename = await ensure_image_artifact(
+        asset_sheet_filename, tool_context
+    )
+    if not asset_sheet_filename:
+        return [
+            json.dumps(
+                {
+                    "status": "failed",
+                    "detail": (
+                        f"Failed to load asset sheet from '{asset_sheet_filename}'.",
+                    ),
+                }
+            )
+        ]
+    asset_sheet_image = await tool_context.load_artifact(asset_sheet_filename)
+    if not asset_sheet_image:
+        return [
+            json.dumps(
+                {
+                    "status": "failed",
+                    "detail": (
+                        f"Failed to load asset sheet content from "
+                        f"'{asset_sheet_filename}'."
+                    ),
+                }
+            )
+        ]
 
     tasks = []
     scenes_to_generate = (
@@ -270,7 +321,7 @@ async def generate_images_from_storyline(
             continue
 
         prompt = prompts[i]
-        is_logo_scene = logo_prompt_present and scene_num == len(prompts) - 1
+        is_logo_scene = logo_prompt_present and i == len(prompts) - 1
         tasks.append(
             _create_image_generation_task(
                 scene_num, prompt, is_logo_scene, logo_image, asset_sheet_image

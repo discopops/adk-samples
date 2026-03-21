@@ -90,22 +90,16 @@ to implement this workflow.
     cd adk-samples/python/agents/fomc-research
     ```
 
-    Install [Poetry](https://python-poetry.org)
+    Install [uv](https://docs.astral.sh/uv/) for dependency management:
 
-    If you have not installed poetry before, you can do so by running:
     ```bash
-    pip install poetry
+    curl -LsSf https://astral.sh/uv/install.sh | sh
     ```
 
-    Install the FOMC Research agent requirements:
+    Install the FOMC Research agent requirements (including dev dependencies):
 
-    **Note for Linux users:** If you get an error related to `keyring` during the installation, you can disable it by running the following command:
     ```bash
-    poetry config keyring.enabled false
-    ```
-    This is a one-time setup.
-    ```bash
-    poetry install
+    uv sync --dev
     ```
 
     This will also install the released version of 'google-adk', the Google Agent Development Kit.
@@ -223,9 +217,9 @@ gcloud projects add-iam-policy-binding ${GOOGLE_CLOUD_PROJECT} \
 Next, you need to create a `.whl` file for your agent. From the `fomc-research`
 directory, run this command:
 ```bash
-poetry build --format=wheel --output=deployment
+uv build --wheel --out-dir=deployment
 ```
-This will create a file named `fomc_research-0.1-py3-none-any.whl` in the
+This will create a file named `fomc_research-0.1.0-py3-none-any.whl` in the
 `deployment` directory.
 
 Then run the following command:
@@ -290,6 +284,34 @@ To delete the agent, run the following command (using the resource ID returned p
 ```bash
 python3 deployment/deploy.py --delete --resource_id=$RESOURCE_ID
 ```
+
+### Alternative: Using Agent Starter Pack
+
+You can also use the [Agent Starter Pack](https://goo.gle/agent-starter-pack) to create a production-ready version of this agent with additional deployment options:
+
+```bash
+# Create and activate a virtual environment
+python -m venv .venv && source .venv/bin/activate # On Windows: .venv\Scripts\activate
+
+# Install the starter pack and create your project
+pip install --upgrade agent-starter-pack
+agent-starter-pack create my-fomc-research -a adk@fomc-research
+```
+
+<details>
+<summary>⚡️ Alternative: Using uv</summary>
+
+If you have [`uv`](https://github.com/astral-sh/uv) installed, you can create and set up your project with a single command:
+
+```bash
+uvx agent-starter-pack create my-fomc-research -a adk@fomc-research
+```
+
+This command handles creating the project without needing to pre-install the package into a virtual environment.
+
+</details>
+
+The starter pack will prompt you to select deployment options and provides additional production-ready features including automated CI/CD deployment scripts.
 
 ## Troubleshooting
 

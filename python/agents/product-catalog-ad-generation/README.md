@@ -4,7 +4,7 @@
 
 This project is a Personalized Ad Generation Assistant that helps marketing teams generate short-form video ads grounded in their product catalog. The agent pulls product metadata from a catalog (e.g., BigQuery), validates demographic targeting, and generates a video using product imagery and corporate branding standards. A human-in-the-loop feedback mechanism allows for iterative refinement of the generated ad.
 
-The agent is defined in `content_gen_agent/agent.py` and uses the `gemini-2.5-pro` model. It orchestrates a multi-step workflow that includes product selection, storyline generation, image and video creation, and final ad assembly, with opportunities for human feedback at key stages.
+The agent is defined in `content_gen_agent/agent.py` and uses the `gemini-3-flash-preview` model. It orchestrates a multi-step workflow that includes product selection, storyline generation, image and video creation, and final ad assembly, with opportunities for human feedback at key stages.
 
 This project contains default product imagery and a corporate logo that will get loaded into BigQuery as part of the deployment script.
 
@@ -36,6 +36,11 @@ This project contains default product imagery and a corporate logo that will get
 │   └── generated/                # Local directory where generated videos are saved.
 └── ...
 ```
+
+## Requirements
+
+Before you begin, ensure you have:
+- **Google Cloud SDK**: For GCP services - [Install](https://cloud.google.com/sdk/docs/install)
 
 ## Setup Scripts
 
@@ -95,6 +100,8 @@ To add your own products to the system, upload your product images to the `stati
 
 ## Usage
 
+After installing dependencies, the product catalog ad generation agent can be run via the `adk web` command.
+
 The main agent orchestrates the entire ad generation workflow, which can be broken down into the following steps:
 
 1.  **Product Selection & Demographic Targeting**: The user provides a product name and desired demographic. The agent queries a BigQuery table to fetch product details and validates that the product is suitable for the target audience.
@@ -107,17 +114,17 @@ The main agent orchestrates the entire ad generation workflow, which can be brok
 
 ### Bring Your Own Asset Sheet
 
-You can provide your own "asset sheet" as long as it includes the product image you are asking for. You can do this by pasting the "GCS URI" into your chat, and the agent will take this and download it. The agent will then use that asset sheet as context to generate the storyline, and move forward through the rest of the flow. Note that this allows you to skip the "product image" upload as long as it exists in your asset sheet. The GCS URI can be from any bucket that the authenticated user has access to.
+You can provide your own "asset sheet" as long as it includes the product image you are asking for. You can either 1) upload the image directly through the ADK web UI or 2) paste the "GCS URI" of an asset sheet into your chat, and the agent will fetch it. The agent will then use your asset sheet as context to generate the storyline, and move forward through the rest of the flow. Note that this allows you to skip the "product image" upload as long as it exists in your asset sheet. The GCS URI can be from any bucket that the authenticated user has access to.
 
 ### Bring Your Own Product Photo
 
-Similarly, you can provide a direct GCS URI for a product photo instead of relying on the product selection from BigQuery. If you provide a GCS URI for the `product_photo_filename` parameter when calling the agent, it will download the image from that URI and use it as the product photo for the ad generation process.
+Similarly, you can provide a product photo either directly through the ADK web UI or as a GCS URI instead of relying on the product selection from BigQuery. If you provide a GCS URI for the `product_photo_filename` parameter when calling the agent, it will download the image from that URI and use it as the product photo for the ad generation process.
 
 ### Hardcoded Configurations
 
 The behavior of the agent is influenced by several hardcoded configurations in the `content_gen_agent` directory:
 
--   **Models**: The agent uses `gemini-2.5-pro` for storyline generation and `gemini-3-pro-image-preview` for image generation. The video generation is handled by `veo-3.1-generate-preview`, and the audio is generated using `lyria-002` and `gemini-2.5-flash-preview-tts`.
+-   **Models**: The agent uses `gemini-3-flash-preview` for storyline generation and `gemini-3-pro-image-preview` for image generation. The video generation is handled by `veo-3.1-generate-preview`, and the audio is generated using `lyria-002` and `gemini-2.5-flash-preview-tts`.  Note that some of these models may only be available in the "global" region of Google Cloud.
 -   **Company Name**: The `COMPANY_NAME` can be set in the `.env` file. If not set, it defaults to "ACME Corp". This influences the branding of the generated content.
 -   **Video Aspect Ratio**: All generated videos adhere to a `9:16` aspect ratio, suitable for short-form content platforms.
 -   **Logo**: The company logo is hardcoded in `static/uploads/branding/logo.png` and is uploaded to GCS during the `02-deploy-gcs-and-bq.sh` setup script.

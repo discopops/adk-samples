@@ -1,11 +1,10 @@
-from google.adk.tools import ToolContext, FunctionTool
-from .. import config
+from google.adk.tools import FunctionTool, ToolContext
 
+from .. import config
 
 
 def check_condition_and_escalate_tool(tool_context: ToolContext) -> dict:
     """Checks the loop termination condition and escalates if met or max count reached."""
- 
 
     # Increment loop iteration count using state
     current_loop_count = tool_context.state.get("loop_iteration", 0)
@@ -39,9 +38,10 @@ def check_condition_and_escalate_tool(tool_context: ToolContext) -> dict:
         )
         response_message += "Loop continues."
 
-    return {"status": "Evaluated scoring condition", "message": response_message}
-
-
+    return {
+        "status": "Evaluated scoring condition",
+        "message": response_message,
+    }
 
 
 check_tool_condition = FunctionTool(func=check_condition_and_escalate_tool)

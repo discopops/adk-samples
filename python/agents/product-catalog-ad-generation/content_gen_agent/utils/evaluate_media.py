@@ -11,22 +11,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Performs quality assurance checks on generated media using a generative model."""
+"""Performs quality assurance checks on generated media using a generative
+model."""
 
 import logging
-from typing import Literal, Optional
+from typing import Literal
 
-from content_gen_agent.utils.evaluation_prompts import get_image_evaluation_prompt
 from google import genai
 from google.api_core import exceptions as api_exceptions
 from google.genai import types
 from pydantic import BaseModel
 
+from content_gen_agent.utils.evaluation_prompts import (
+    get_image_evaluation_prompt,
+)
+
 # --- Configuration ---
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
-EVALUATION_MODEL = "gemini-2.5-flash"
+EVALUATION_MODEL = "gemini-3-flash-preview"
 
 
 class EvalResult(BaseModel):
@@ -56,23 +60,25 @@ def _get_internal_prompt(mime_type: str, evaluation_criteria: str) -> str:
         return get_image_evaluation_prompt(evaluation_criteria)
     return f"""
     You are a strict Quality Assurance specialist.
-    Evaluate the following media based on this single criterion: '{evaluation_criteria}'.
+    Evaluate the following media based on this single criterion:
+    '{evaluation_criteria}'.
 
     Your response must be in JSON.
     - If the media passes, respond with: {{"decision": "Pass"}}
-    - If it fails, respond with: {{"decision": "Fail", "reason": "A concise explanation."}}
+    - If it fails, respond with:
+      {{"decision": "Fail", "reason": "A concise explanation."}}
     """
 
 
 async def evaluate_media(
     media_bytes: bytes, mime_type: str, evaluation_criteria: str
-) -> Optional[EvalResult]:
+) -> EvalResult | None:
     """Performs a quality assurance check on media bytes.
 
     Args:
         media_bytes: The media content as bytes.
         mime_type: The MIME type of the media.
-        evaluation_criteria: The rule or question to evaluate the media against.
+        evaluation_criteria: The rule or question to evaluate media against.
 
     Returns:
         An instance of EvalResult, or None on failure.
@@ -104,7 +110,7 @@ async def evaluate_media(
 
 
 def calculate_evaluation_score(
-    evaluation_result: Optional[EvalResult],
+    evaluation_result: EvalResult | None,
 ) -> int:
     """Calculates a score based on the evaluation result.
 

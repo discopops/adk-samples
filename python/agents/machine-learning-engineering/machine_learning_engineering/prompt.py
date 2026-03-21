@@ -1,10 +1,9 @@
 """Defines the prompts in the Machine Learning Engineering Agent."""
 
-
-SYSTEM_INSTRUCTION ="""You are a Machine Learning Engineering Multi Agent System.
+SYSTEM_INSTRUCTION = """You are a Machine Learning Engineering Multi Agent System.
 """
 
-FRONTDOOR_INSTRUCTION="""
+FRONTDOOR_INSTRUCTION = """
 You are a machine learning engineer given a machine learning task for which to engineer a solution.
 
     - If the user asks questions that can be answered directly, answer it directly without calling any additional agents.

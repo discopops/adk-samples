@@ -15,7 +15,6 @@
 """File-related utility functions for fed_research_agent."""
 
 import base64
-import binascii
 import io
 import logging
 import mimetypes
@@ -54,7 +53,9 @@ async def download_file_from_url(
             "Content-Type", mimetypes.guess_type(url)
         )
         artifact = Part(inline_data=Blob(data=file_bytes, mime_type=mime_type))
-        await tool_context.save_artifact(filename=output_filename, artifact=artifact)
+        await tool_context.save_artifact(
+            filename=output_filename, artifact=artifact
+        )
         logger.info("Downloaded %s to artifact %s", url, output_filename)
         return output_filename
 
@@ -119,7 +120,9 @@ async def save_html_to_artifact(
       The name of the artifact.
     """
     artifact = Part(text=html_content)
-    await tool_context.save_artifact(filename=output_filename, artifact=artifact)
+    await tool_context.save_artifact(
+        filename=output_filename, artifact=artifact
+    )
     logger.info("HTML content successfully saved to %s", output_filename)
     return output_filename
 
