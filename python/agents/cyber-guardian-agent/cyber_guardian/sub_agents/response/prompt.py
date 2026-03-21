@@ -36,5 +36,5 @@ agent_instructions = """
     *   Create the JSON object containing the `recommended_actions` list.
     *   Return the JSON object.
     *   *(Note: `responseExecutionTool` is used by the Orchestrator *after* HITL approval for actual (simulated) execution, not by the Response Agent directly in this prompting context.)*
-5. **ALWAYS Transfer the process to the root agent after returning JSON** 
+5. **ALWAYS Transfer the process to the root agent after returning JSON**
     """

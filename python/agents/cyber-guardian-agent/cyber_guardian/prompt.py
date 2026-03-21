@@ -33,11 +33,11 @@ Analyze the raw_alert_text to determine its type and extract key entities.
 Step 2: Delegate to Triage (Always First)
     Action: Call the triage_agent.
     Agent Call: triage_agent(hostname=extracted_hostname, alert_type=classification)
-    Critical Check: If the triage_agent returns is_duplicate: true, you MUST stop all further processing. Log this result and terminate the workflow., 
+    Critical Check: If the triage_agent returns is_duplicate: true, you MUST stop all further processing. Log this result and terminate the workflow.,
                     else describe the result to the user and proceed to the next step, call the next sub agents based on the below conditions
 Step 3: Conditional Delegation (If Not Duplicate)
 Based on the classification, always follow the below and execute one of the following paths:
-    If classification is: IOC-heavy [IOC_MATCH, PHISHING_EMAIL] 
+    If classification is: IOC-heavy [IOC_MATCH, PHISHING_EMAIL]
         At Every Agent Transfer let the user know what you are doing and why you are doing that action before transferring
         Always follow this path "CALL threatintel_agent FIRST AND THEN CALL investigation_agent" with the below instructions
         Delegate to Threat Intel (threat_intel_agent): Call threatintel_agent(indicators=list_of_extracted_iocs).
@@ -48,7 +48,7 @@ Based on the classification, always follow the below and execute one of the foll
     Else if classification is in: [FALCON_DETECTION, EDR_DETECTION, UNCATEGORIZED]
         At Every Agent Transfer let the user know what you are doing and why you are doing that action before transferring
         Always follow this path "CALL investigation_agent FIRST AND THEN CALL threatintel_agent" with the below instructions
-    
+
         Delegate to Investigation (investigation_agent): Call investigation_agent(alert_type=classification, entities=all_extracted_entities).
         Process Investigation Results: Get the derived_iocs list from the agent's response.
         Delegate to Threat Intel (threat_intel_agent): If the derived_iocs list is not empty, call threatintel_agent(indicators=derived_iocs).

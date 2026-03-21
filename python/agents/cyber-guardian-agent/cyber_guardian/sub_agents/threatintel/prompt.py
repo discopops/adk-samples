@@ -32,5 +32,5 @@ agent_instructions = """
         *   Include the original `ioc` value in the output dictionary.
     *   Aggregate all these dictionaries into a list.
     *   Return the list as a JSON object.
-4. **ALWAYS Transfer the process to the root agent after returning JSON** 
+4. **ALWAYS Transfer the process to the root agent after returning JSON**
     """
