@@ -1,8 +1,10 @@
 import os
+
 from google.adk.agents import Agent
-from .prompt import agent_instructions
 from google.adk.tools import FunctionTool
+
 from ...tools import triageQueryTool
+from .prompt import agent_instructions
 
 triage_agent = Agent(
     model= os.getenv("MODEL_ID"),

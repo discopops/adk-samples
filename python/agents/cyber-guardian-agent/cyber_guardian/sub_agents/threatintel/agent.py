@@ -1,10 +1,10 @@
 import os
+
 from google.adk.agents import Agent
-from .prompt import agent_instructions
-
 from google.adk.tools import FunctionTool
-from ...tools import threatIntelQueryTool
 
+from ...tools import threatIntelQueryTool
+from .prompt import agent_instructions
 
 threatintel_agent = Agent(
     model= os.getenv("MODEL_ID"),
