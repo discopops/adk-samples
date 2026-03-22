@@ -170,7 +170,7 @@ def getPlaybookTool(triggering_condition: str) -> str:
     Retrieves the appropriate response playbook based on a trigger.
     - Arg triggering_condition: The condition to match, e.g., "ThreatName = 'Cobalt Strike C2'".
     """
-    project_id  = os.getenv("GOOGLE_CLOUD_PROJECT")
+    project_id = os.getenv("GOOGLE_CLOUD_PROJECT")
     dataset = os.getenv("BQ_DATASET")
     client = bigquery.Client(project=project_id)
 

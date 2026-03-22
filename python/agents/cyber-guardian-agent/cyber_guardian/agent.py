@@ -16,14 +16,12 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 root_agent = Agent(
-    model= os.getenv("MODEL_ID"),
+    model=os.getenv("MODEL_ID"),
     name="cyber_guardian_orchestrator",
     description="Orchestrates a multi-agent cybersecurity incident response workflow",
     instruction=root_agent_instruction,
-    planner=BuiltInPlanner(thinking_config=types.ThinkingConfig(
-            include_thoughts=True,
-            thinking_budget=512
-        )
+    planner=BuiltInPlanner(
+        thinking_config=types.ThinkingConfig(include_thoughts=True, thinking_budget=512)
     ),
-    sub_agents = [threatintel_agent, investigation_agent, triage_agent, response_agent]
+    sub_agents=[threatintel_agent, investigation_agent, triage_agent, response_agent],
 )

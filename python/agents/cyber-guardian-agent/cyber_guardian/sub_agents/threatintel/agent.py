@@ -7,10 +7,10 @@ from ...tools import threatIntelQueryTool
 from .prompt import agent_instructions
 
 threatintel_agent = Agent(
-    model= os.getenv("MODEL_ID"),
+    model=os.getenv("MODEL_ID"),
     name="threat_intel_agent",
     description="Enriches IPs/domains/hashes with threat intelligence context",
     instruction=agent_instructions,
     tools=[FunctionTool(threatIntelQueryTool)],
-    output_key="threatintel_agent_output"
+    output_key="threatintel_agent_output",
 )
