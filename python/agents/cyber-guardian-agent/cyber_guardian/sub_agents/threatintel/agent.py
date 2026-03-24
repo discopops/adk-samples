@@ -7,7 +7,7 @@ from ...tools import threatIntelQueryTool
 from .prompt import agent_instructions
 
 threatintel_agent = Agent(
-    model=os.getenv("MODEL_ID"),
+    model=os.getenv("MODEL_ID", "gemini-2.5-flash"),
     name="threat_intel_agent",
     description="Enriches IPs/domains/hashes with threat intelligence context",
     instruction=agent_instructions,

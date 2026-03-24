@@ -7,7 +7,7 @@ from ...tools import investigationQueryTool
 from .prompt import agent_instructions
 
 investigation_agent = Agent(
-    model=os.getenv("MODEL_ID"),
+    model=os.getenv("MODEL_ID", "gemini-2.5-flash"),
     name="investigation_agent",
     description="Performs incident investigation using internal DBs and sandboxes",
     instruction=agent_instructions,

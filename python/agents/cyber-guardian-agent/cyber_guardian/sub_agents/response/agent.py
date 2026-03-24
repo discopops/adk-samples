@@ -7,7 +7,7 @@ from ...tools import getPlaybookTool, responseExecutionTool
 from .prompt import agent_instructions
 
 response_agent = Agent(
-    model=os.getenv("MODEL_ID"),
+    model=os.getenv("MODEL_ID", "gemini-2.5-flash"),
     name="response_agent",
     description="Recommends and triggers incident response actions",
     instruction=agent_instructions,

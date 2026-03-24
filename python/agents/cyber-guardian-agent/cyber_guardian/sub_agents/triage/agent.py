@@ -7,7 +7,7 @@ from ...tools import triageQueryTool
 from .prompt import agent_instructions
 
 triage_agent = Agent(
-    model=os.getenv("MODEL_ID"),
+    model=os.getenv("MODEL_ID", "gemini-2.5-flash"),
     name="triage_agent",
     description="Assesses alert severity, deduplication, and context via SIEM",
     instruction=agent_instructions,

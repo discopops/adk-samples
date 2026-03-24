@@ -16,7 +16,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 root_agent = Agent(
-    model=os.getenv("MODEL_ID"),
+    model=os.getenv("MODEL_ID", "gemini-2.5-flash"),
     name="cyber_guardian_orchestrator",
     description="Orchestrates a multi-agent cybersecurity incident response workflow",
     instruction=root_agent_instruction,
