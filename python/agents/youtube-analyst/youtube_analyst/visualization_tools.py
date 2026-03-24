@@ -59,7 +59,9 @@ async def execute_visualization_code(
             return "Error: The executed code did not define a variable named 'fig'."
 
         if not isinstance(fig, (go.Figure)):
-            return f"Error: The variable 'fig' is not a plotly Figure. It is {type(fig)}."
+            return (
+                f"Error: The variable 'fig' is not a plotly Figure. It is {type(fig)}."
+            )
 
         # Save as self-contained HTML
         fig.write_html(filepath, include_plotlyjs="cdn")
@@ -73,9 +75,7 @@ async def execute_visualization_code(
                 await tool_context.save_artifact(
                     artifact_name,
                     types.Part(
-                        inline_data=types.Blob(
-                            mime_type="text/html", data=html_bytes
-                        )
+                        inline_data=types.Blob(mime_type="text/html", data=html_bytes)
                     ),
                 )
                 logger.info(f"Successfully saved artifact {filename}")

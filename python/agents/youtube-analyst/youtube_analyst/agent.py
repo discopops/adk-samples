@@ -6,16 +6,18 @@ from google.adk.tools import load_artifacts
 
 from .config import config
 from .tools import (
-    analyze_sentiment_heuristic,
-    calculate_engagement_metrics,
-    calculate_match_score,
-    get_channel_details,
-    get_current_date_time,
-    get_date_range,
-    get_video_comments,
-    get_video_details,
-    render_html,
-    search_youtube,
+                    analyze_sentiment_heuristic,
+                    calculate_engagement_metrics,
+                    calculate_match_score,
+                    generate_timestamp_url,
+                    get_channel_details,
+                    get_current_date_time,
+                    get_date_range,
+                    get_trending_videos,
+                    get_video_comments,
+                    get_video_details,
+                    render_html,
+                    search_youtube,
 )
 from .utils import load_prompt
 from .visualization_agent import visualization_agent
@@ -28,9 +30,11 @@ youtube_agent = Agent(
     sub_agents=[visualization_agent],
     tools=[
         search_youtube,
+        get_trending_videos,
         get_video_details,
         get_channel_details,
         get_video_comments,
+        generate_timestamp_url,
         calculate_engagement_metrics,
         calculate_match_score,
         analyze_sentiment_heuristic,

@@ -100,7 +100,7 @@ youtube-analyst/
     GOOGLE_CLOUD_PROJECT=your-project-id
     GOOGLE_CLOUD_LOCATION=global
     GOOGLE_GENAI_USE_VERTEXAI=1
-    GOOGLE_API_KEY=your-youtube-data-api-key
+    YOUTUBE_API_KEY=your-youtube-data-api-key
     ```
 
 ## Usage
@@ -152,7 +152,7 @@ Arguments: {"view_count": 50000, "like_count": 2500, "comment_count": 150}
 
 ## Troubleshooting
 
-- **API Errors:** If you see "Quota Exceeded" or 403 errors, ensure your `GOOGLE_API_KEY` is valid and has the YouTube Data API v3 enabled in the Google Cloud Console.
+- **API Errors:** If you see "Quota Exceeded" or 403 errors, ensure your `YOUTUBE_API_KEY` is valid and has the YouTube Data API v3 enabled in the Google Cloud Console.
 - **Visualization Failures:** If a chart fails to render, ask the agent to "try again" or "check the data format." The visualization agent writes code dynamically, and sometimes a retry fixes syntax issues.
 - **Empty Results:** If searches return nothing, try broadening your query or removing date filters.
 
