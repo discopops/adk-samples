@@ -21,7 +21,9 @@ class Config(BaseSettings):
     """Configuration settings for the YouTube Analyst agent."""
 
     model_config = SettingsConfigDict(
-        env_file=os.path.join(os.path.dirname(os.path.abspath(__file__)), "../.env"),
+        env_file=os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "../.env"
+        ),
         env_prefix="",
         case_sensitive=True,
         extra="ignore",
@@ -31,7 +33,9 @@ class Config(BaseSettings):
     app_name: str = "youtube_analyst_app"
 
     # Cloud & Auth Config
-    GOOGLE_CLOUD_PROJECT: str = Field(default="", description="Google Cloud Project ID")
+    GOOGLE_CLOUD_PROJECT: str = Field(
+        default="", description="Google Cloud Project ID"
+    )
     GOOGLE_CLOUD_LOCATION: str = Field(default="global")
     GOOGLE_GENAI_USE_VERTEXAI: str = Field(default="1")
     GOOGLE_GENAI_LOCATION: str = Field(default="global")
