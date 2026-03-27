@@ -1,4 +1,4 @@
-"""Deployment script for guidelines-driven-media-gen agent."""
+"""Deployment script for on-brand-genmedia agent."""
 
 import json
 import logging
@@ -13,7 +13,7 @@ from google.cloud import storage
 from vertexai import agent_engines
 from vertexai.preview.reasoning_engines import AdkApp
 
-from guidelines_driven_media_gen.agent import root_agent
+from on_brand_genmedia.agent import root_agent
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 # Assuming script is in `deployment/` and .env is in the root
 ENV_FILE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".env"))
 
-AGENT_WHL_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), "guidelines_driven_media_gen-0.1.0-py3-none-any.whl"))
+AGENT_WHL_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), "on_brand_genmedia-0.1.0-py3-none-any.whl"))
 CONFIG_FILE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "deploy_config.json"))
 
 

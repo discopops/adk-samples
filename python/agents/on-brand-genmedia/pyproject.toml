@@ -1,5 +1,5 @@
 [project]
-name = "guidelines-driven-media-gen"
+name = "on-brand-genmedia"
 version = "0.1.0"
 description = "The guidelines driven media generation agent generates an image for a prompt, evaluates the image against a set of rules and regenerates the image if necessary."
 authors = [
@@ -17,6 +17,8 @@ dependencies = [
     "pillow>=10.3.0",
     "scikit-learn>=1.5.2",
     "tenacity>=9.1.2",
+    "pydantic>=2.10.6",
+    "python-dotenv>=1.0.1",
 ]
 
 [dependency-groups]
@@ -110,5 +112,5 @@ asyncio_default_fixture_loop_scope = "function"
 example_question = "Generate an image about a polar bear in the Sahara desert"
 
 [tool.agent-starter-pack.settings]
-agent_directory = "guidelines_driven_media_gen"
+agent_directory = "on_brand_genmedia"
 

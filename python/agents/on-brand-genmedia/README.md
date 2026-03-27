@@ -69,7 +69,7 @@ This diagram shows the detailed architecture of the agents and tools used to imp
     ```bash
     # Clone this repository.
     git clone https://github.com/google/adk-samples.git
-    cd adk-samples/python/agents/guidelines-driven-media-gen
+    cd adk-samples/python/agents/on-brand-genmedia
     # Install the package and dependencies.
     uv sync --dev
     ```
@@ -92,6 +92,7 @@ This diagram shows the detailed architecture of the agents and tools used to imp
 
 ## Running the Agent
 
+
 **Using `adk`**
 
 ADK provides convenient ways to bring up agents locally and interact with them.
@@ -102,7 +103,7 @@ Here are some example requests you may ask the Guidelines Driven Media Gen Agent
 You may talk to the agent using the CLI:
 
 ```bash
-adk run guidelines_driven_media_gen
+adk run on_brand_genmedia
 ```
 
 Or on a web interface:
@@ -112,11 +113,11 @@ adk web
 ```
 
 The command `adk web` will start a web server on your machine and print the URL.
-You may open the URL, select "guidelines_driven_media_gen" in the top-left drop-down menu, and
+You may open the URL, select "on_brand_genmedia" in the top-left drop-down menu, and
 a chatbot interface will appear on the right. The conversation is initially
 blank. 
 
-
+For a comprehensive user guide with example prompts, generated images, and customization instructions for digital assets and search logic, please refer to [User Guide and Customization](User_Guide_and_Customization.md). 
 ### Alternative: Using Agent Starter Pack
 
 You can also use the [Agent Starter Pack](https://goo.gle/agent-starter-pack) to create a production-ready version of this agent with additional deployment options:
@@ -127,7 +128,7 @@ python -m venv .venv && source .venv/bin/activate # On Windows: .venv\Scripts\ac
 
 # Install the starter pack and create your project
 pip install --upgrade agent-starter-pack
-agent-starter-pack create my-image-scorer -a adk@guidelines-driven-media-gen
+agent-starter-pack create my-on-brand-genmedia -a adk@on-brand-genmedia
 ```
 
 <details>
@@ -135,7 +136,7 @@ agent-starter-pack create my-image-scorer -a adk@guidelines-driven-media-gen
 
 If you have [`uv`](https://github.com/astral-sh/uv) installed, you can create and set up your project with a single command:
 ```bash
-uvx agent-starter-pack create my-image-scorer -a adk@guidelines-driven-media-gen
+uvx agent-starter-pack create my-on-brand-genmedia -a adk@on-brand-genmedia
 ```
 This command handles creating the project without needing to pre-install the package into a virtual environment.
 

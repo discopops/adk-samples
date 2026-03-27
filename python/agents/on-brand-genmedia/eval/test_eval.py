@@ -17,10 +17,10 @@ def load_env():
 @pytest.mark.asyncio
 async def test_all():
     """Test the agent's basic ability on a few examples."""
-    test_json_path = str(pathlib.Path(__file__).parent / "data" / "guidelines_driven_media_gen.evalset.json")
+    test_json_path = str(pathlib.Path(__file__).parent / "data" / "on_brand_genmedia.test.json")
     print(f"\nLooking for evalset at: {test_json_path}")
     results = await AgentEvaluator.evaluate(
-        "guidelines_driven_media_gen",
+        "on_brand_genmedia",
         str(pathlib.Path(__file__).parent / "data"),
         num_runs=1,
     )

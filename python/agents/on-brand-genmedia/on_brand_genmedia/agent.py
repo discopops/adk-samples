@@ -9,16 +9,6 @@ from .checker_agent import checker_agent_instance
 from google.adk.agents import SequentialAgent, LoopAgent
 from google.adk.agents.callback_context import CallbackContext
 
-# To use AI Studio credentials:
-# 1. Create a .env file in the /app directory with:
-#    GOOGLE_GENAI_USE_VERTEXAI=FALSE
-#    GOOGLE_API_KEY=PASTE_YOUR_ACTUAL_API_KEY_HERE
-# 2. This will override the default Vertex AI configuration
-_, project_id = google.auth.default()
-os.environ.setdefault("GOOGLE_CLOUD_PROJECT", project_id)
-os.environ["GOOGLE_CLOUD_LOCATION"] = "global"
-os.environ.setdefault("GOOGLE_GENAI_USE_VERTEXAI", "True")
-
 
 def set_session(callback_context: CallbackContext):
     """
@@ -60,8 +50,8 @@ image_generation_and_scoring_agent = SequentialAgent(
 # The LoopAgent will repeatedly execute its sub_agents in the order they are listed.
 # It will continue looping until one of its sub_agents (specifically, the checker_agent's tool)
 # sets tool_context.actions.escalate = True.
-guidelines_driven_media_gen = LoopAgent(
-    name="guidelines_driven_media_gen",
+on_brand_genmedia = LoopAgent(
+    name="on_brand_genmedia",
     description="Repeatedly runs a sequential process and checks a termination condition.",
     sub_agents=[
         image_generation_and_scoring_agent,  # First, run your sequential process [1]
@@ -69,4 +59,4 @@ guidelines_driven_media_gen = LoopAgent(
     ],
     before_agent_callback=set_session,
 )
-root_agent = guidelines_driven_media_gen
+root_agent = on_brand_genmedia
