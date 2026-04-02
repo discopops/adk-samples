@@ -40,6 +40,17 @@ class Config(BaseSettings):
     GOOGLE_GENAI_USE_VERTEXAI: str = Field(default="1")
     GOOGLE_GENAI_LOCATION: str = Field(default="global")
 
+    # Storage Configuration
+    PUBLIC_ARTIFACT_BUCKET: str = Field(
+        default="",
+        description="GCS Bucket for publishing public artifacts (HTML reports, images).",
+    )
+
+    @property
+    def full_model_name(self) -> str:
+        """Constructs the full model resource name."""
+        return f"projects/{self.GOOGLE_CLOUD_PROJECT}/locations/{self.GOOGLE_GENAI_LOCATION}/publishers/google/models/{self.agent_settings.model}"
+
     # YouTube Specific
     YOUTUBE_API_KEY: str = Field(
         default="", description="Google API Key for YouTube Data API"

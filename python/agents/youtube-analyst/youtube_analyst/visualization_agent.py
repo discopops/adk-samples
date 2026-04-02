@@ -5,8 +5,8 @@ from google.adk.agents import Agent
 from google.adk.tools import load_artifacts
 
 from .common.llm import GeminiWithLocation
+from .common.utils import load_prompt
 from .config import config
-from .utils import load_prompt
 from .visualization_tools import (
     execute_matplotlib_code,
     execute_visualization_code,

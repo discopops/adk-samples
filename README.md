@@ -40,10 +40,11 @@ To learn more, check out the [ADK Documentation](https://google.github.io/adk-do
 │   │   ├── customer-service
 │   │   ├── data-engineering
 │   │   ├── data-science
+│   │   ├── deep-search
 │   │   ├── financial-advisor
 │   │   ├── fomc-research
 │   │   ├── gemini-fullstack
-│   │   ├── deep-search
+│   │   ├── gemma-food-tour-guide
 │   │   ├── google-trends-agent
 │   │   ├── image-scoring
 │   │   ├── llm-auditor
