@@ -135,7 +135,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "beautifulsoup4", specifier = ">=4.14.2" },
-    { name = "google-adk", specifier = ">=1.27.4" },
+    { name = "google-adk", specifier = "==1.28.0" },
     { name = "google-cloud-aiplatform", specifier = ">=1.144.0" },
     { name = "google-cloud-bigquery", specifier = ">=3.38.0" },
     { name = "google-cloud-discoveryengine", specifier = ">=0.13.12" },
@@ -154,7 +154,7 @@ dev = [
     { name = "pytest", specifier = ">=8.3.3" },
     { name = "pytest-asyncio", specifier = ">=0.26.0" },
     { name = "pytest-mock", specifier = ">=3.14.0" },
-    { name = "ruff", specifier = ">=0.4.6" },
+    { name = "ruff", specifier = "==0.15.8" },
     { name = "types-pyyaml", specifier = ">=6.0.12.20240917" },
     { name = "types-requests", specifier = ">=2.32.0.20240914" },
 ]
