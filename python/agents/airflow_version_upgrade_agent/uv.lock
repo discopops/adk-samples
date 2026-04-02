@@ -109,10 +109,12 @@ source = { editable = "." }
 dependencies = [
     { name = "beautifulsoup4" },
     { name = "google-adk" },
+    { name = "google-cloud-aiplatform" },
     { name = "google-cloud-bigquery" },
     { name = "google-cloud-discoveryengine" },
     { name = "google-cloud-storage" },
     { name = "google-genai" },
+    { name = "mcp" },
     { name = "python-dotenv" },
     { name = "requests" },
 ]
@@ -134,10 +136,12 @@ dev = [
 requires-dist = [
     { name = "beautifulsoup4", specifier = ">=4.14.2" },
     { name = "google-adk", specifier = ">=1.27.4" },
+    { name = "google-cloud-aiplatform", specifier = ">=1.144.0" },
     { name = "google-cloud-bigquery", specifier = ">=3.38.0" },
     { name = "google-cloud-discoveryengine", specifier = ">=0.13.12" },
     { name = "google-cloud-storage", specifier = ">=3.10.0" },
     { name = "google-genai", specifier = ">=1.50.0" },
+    { name = "mcp", specifier = ">=1.26.0" },
     { name = "python-dotenv", specifier = ">=1.2.2" },
     { name = "requests", specifier = ">=2.32.5" },
 ]

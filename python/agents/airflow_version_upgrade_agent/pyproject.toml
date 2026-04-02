@@ -11,6 +11,8 @@ requires-python = ">=3.11,<3.13"
 
 dependencies = [
     "google-adk>=1.27.4",
+    "mcp>=1.26.0",
+    "google-cloud-aiplatform>=1.144.0",
     "google-cloud-storage>=3.10.0",
     "google-cloud-bigquery>=3.38.0",
     "google-genai>=1.50.0",
