@@ -1,6 +1,7 @@
 import os
 import dotenv
 from google.adk.agents import LlmAgent
+from google.adk.models import Gemini
 from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset
 from google.adk.tools.mcp_tool.mcp_session_manager import StreamableHTTPConnectionParams 
 
@@ -44,7 +45,7 @@ def get_maps_mcp_toolset():
 maps_toolset = get_maps_mcp_toolset()
 
 root_agent = LlmAgent(
-    model="gemma-4-31b-it",
+    model=Gemini(model="gemma-4-31b-it"),
     name='food_tour_agent',
     instruction=system_instruction,
     tools=[maps_toolset]
