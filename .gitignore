@@ -226,3 +226,6 @@ bin/
 go/agents/sail-researcher/researcher
 go/agents/sail-researcher/vendor/*
 go/agents/sail-researcher/server
+
+# Temporary Files for Agent Engine Deployment
+**/*_tmp*/
