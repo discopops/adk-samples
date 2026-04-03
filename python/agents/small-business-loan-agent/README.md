@@ -523,6 +523,10 @@ gcloud projects add-iam-policy-binding $PROJECT_ID \
   --condition=None
 ```
 
+To register the agent to Gemini Enterprise, do this: 
+```bash
+uvx agent-starter-pack@latest register-gemini-enterprise
+```
 ## License
 
 Copyright 2026 Google LLC. Licensed under the Apache License, Version 2.0.
