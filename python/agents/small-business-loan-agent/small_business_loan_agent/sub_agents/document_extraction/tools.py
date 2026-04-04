@@ -1,7 +1,6 @@
 """Callbacks for the Document Extraction Agent."""
 
 import base64
-import os
 
 from google.adk.agents.callback_context import CallbackContext
 from google.adk.models.llm_request import LlmRequest
@@ -76,15 +75,14 @@ async def _load_document_from_artifacts(callback_context: CallbackContext) -> tu
 async def _load_document_from_gcs(bucket_name: str, blob_name: str) -> bytes:
     """Download a file from GCS and return bytes."""
     from google.cloud import storage
+
     # Run in thread executor as storage client is synchronous
     import asyncio
-    
     def _download():
         client = storage.Client()
         bucket = client.bucket(bucket_name)
         blob = bucket.blob(blob_name)
         return blob.download_as_bytes()
-        
     return await asyncio.to_thread(_download)
 
 
@@ -144,7 +142,6 @@ async def inject_document_into_request(
                         user_message += part.text + " "
 
         gcs_bucket = GCS_DATA_BUCKET
-        
         if gcs_bucket:
             trigger_keywords = ["gcs", "sample_application_complete.pdf", "sample_application_incomplete.pdf"]
             if any(kw.lower() in user_message.lower() for kw in trigger_keywords):
@@ -152,7 +149,6 @@ async def inject_document_into_request(
                 file_to_fetch = "sample_application_complete.pdf"  # Default
                 if "sample_application_incomplete.pdf" in user_message:
                     file_to_fetch = "sample_application_incomplete.pdf"
-                
                 try:
                     raw_bytes = await _load_document_from_gcs(gcs_bucket, file_to_fetch)
                     mime_type = "application/pdf"
