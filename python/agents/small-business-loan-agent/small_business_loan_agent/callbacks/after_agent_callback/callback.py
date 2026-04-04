@@ -21,6 +21,7 @@ Validates agent responses before they are shown to users by checking:
 3. Response quality — Is the response complete and actionable?
 """
 
+import os
 import json
 
 from typing import Any
@@ -142,7 +143,7 @@ async def llm_judge_gate(
             final_response=final_response or "No response",
         )
 
-        client = Client()
+        client = Client(project=os.getenv("GOOGLE_CLOUD_PROJECT"), location="global")
         judge_response = await client.aio.models.generate_content(
             model=JUDGE_MODEL,
             contents=judge_input,

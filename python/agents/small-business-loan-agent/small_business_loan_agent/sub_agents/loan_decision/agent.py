@@ -16,6 +16,7 @@
 
 from google.adk.agents import LlmAgent
 from google.genai.types import GenerateContentConfig, HttpOptions, HttpRetryOptions
+from small_business_loan_agent.gemini_custom import GeminiPreview
 from small_business_loan_agent.shared_libraries.firestore_utils.state_callbacks import (
     after_agent_callback_with_state_logging,
     before_agent_callback_with_state_check,
@@ -32,7 +33,7 @@ MODEL_NAME = "gemini-3.1-pro-preview"
 
 loan_decision_agent = LlmAgent(
     name="LoanDecisionAgent",
-    model=MODEL_NAME,
+    model=GeminiPreview(model=MODEL_NAME),
     generate_content_config=GenerateContentConfig(
         http_options=HttpOptions(
             retry_options=HttpRetryOptions(initial_delay=1, attempts=2),

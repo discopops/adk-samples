@@ -29,6 +29,8 @@ from small_business_loan_agent.shared_libraries.logging_config import get_logger
 
 logger = get_logger(__name__)
 
+GCP_FIRESTORE_DB = "small-business-loan-states"
+
 
 def _make_json_serializable(obj: Any) -> Any:
     """Recursively convert datetime objects to ISO format strings."""
@@ -73,7 +75,7 @@ class ProcessStateService:
     OVERALL_STATUS_FAILED = "failed"
 
     def __init__(self, database_name: str | None = None) -> None:
-        db_name = database_name or os.getenv("GCP_FIRESTORE_DB", "session-states")
+        db_name = database_name or GCP_FIRESTORE_DB
         project_id = os.getenv("GOOGLE_CLOUD_PROJECT")
 
         if not project_id:
