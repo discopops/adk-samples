@@ -1,6 +1,7 @@
 """Callbacks for the Document Extraction Agent."""
 
 import base64
+import os
 
 from google.adk.agents.callback_context import CallbackContext
 from google.adk.models.llm_request import LlmRequest
@@ -8,6 +9,8 @@ from google.genai import types
 from small_business_loan_agent.shared_libraries.logging_config import get_logger
 
 logger = get_logger(__name__)
+
+GCS_DATA_BUCKET = "small-business-loan-data"
 
 
 async def _load_document_from_artifacts(callback_context: CallbackContext) -> tuple[bytes | None, str]:
@@ -70,6 +73,21 @@ async def _load_document_from_artifacts(callback_context: CallbackContext) -> tu
         return None, ""
 
 
+async def _load_document_from_gcs(bucket_name: str, blob_name: str) -> bytes:
+    """Download a file from GCS and return bytes."""
+    from google.cloud import storage
+    # Run in thread executor as storage client is synchronous
+    import asyncio
+    
+    def _download():
+        client = storage.Client()
+        bucket = client.bucket(bucket_name)
+        blob = bucket.blob(blob_name)
+        return blob.download_as_bytes()
+        
+    return await asyncio.to_thread(_download)
+
+
 async def inject_document_into_request(
     callback_context: CallbackContext,
     llm_request: LlmRequest,
@@ -85,6 +103,8 @@ async def inject_document_into_request(
        (ADK Web local development, ADK evaluations)
     2. Artifact service — file uploaded through Gemini Enterprise (AgentSpace),
        where the platform stores uploaded files as artifacts
+    3. GCS fallback — if enabled by presence of keywords in user request
+       and GCS_DATA_BUCKET env var is set.
     """
     doc_part = None
 
@@ -114,8 +134,37 @@ async def inject_document_into_request(
             doc_part = types.Part(inline_data=types.Blob(mime_type=mime_type, data=raw_bytes))
             logger.info(f"Loaded document from artifact service: mime_type={mime_type}, size={len(raw_bytes)} bytes")
 
+    # Source 3: GCS fallback
     if doc_part is None:
-        logger.warning("No document found in session state or artifact service")
+        user_message = ""
+        for content in llm_request.contents:
+            if content.role == "user":
+                for part in content.parts:
+                    if hasattr(part, "text") and part.text:
+                        user_message += part.text + " "
+
+        gcs_bucket = GCS_DATA_BUCKET
+        
+        if gcs_bucket:
+            trigger_keywords = ["gcs", "sample_application_complete.pdf", "sample_application_incomplete.pdf"]
+            if any(kw.lower() in user_message.lower() for kw in trigger_keywords):
+                logger.info("Triggered GCS file fetch based on user request keywords.")
+                file_to_fetch = "sample_application_complete.pdf"  # Default
+                if "sample_application_incomplete.pdf" in user_message:
+                    file_to_fetch = "sample_application_incomplete.pdf"
+                
+                try:
+                    raw_bytes = await _load_document_from_gcs(gcs_bucket, file_to_fetch)
+                    mime_type = "application/pdf"
+                    doc_part = types.Part(inline_data=types.Blob(mime_type=mime_type, data=raw_bytes))
+                    logger.info(f"Loaded document from GCS: {file_to_fetch}, size={len(raw_bytes)} bytes")
+                except Exception as e:
+                    logger.error(f"Failed to load document from GCS: {e}")
+        else:
+            logger.warning("No document found and GCS_DATA_BUCKET not configured for fallback.")
+
+    if doc_part is None:
+        logger.warning("No document found in session state, artifact service, or GCS")
         return None
 
     llm_request.contents.append(

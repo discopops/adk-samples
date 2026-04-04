@@ -87,7 +87,7 @@ Agent: [check_process_status -> initializes new process]
 
 B. Repair the data in Firestore:
 
-1. Open the [Firestore Console](https://console.cloud.google.com/firestore) and select the `session-states` database
+1. Open the [Firestore Console](https://console.cloud.google.com/firestore) and select the `small-business-loan-states` database
 2. Navigate to **`process_states`** collection → document **`SBL-2025-00391`**
 3. Under `steps.DocumentExtractionAgent.data`, fill in the missing field:
 
@@ -266,13 +266,14 @@ gcloud services enable \
   aiplatform.googleapis.com \
   firestore.googleapis.com
 
-# Create Firestore database for state management
+# Create Firestore database for state management through command line or through the GCP COnsoldeI
 gcloud firestore databases create \
-  --database=session-states \
+  --database=small-business-loan-states \
   --location=nam5 \
   --type=firestore-native
-
 ```
+
+Or you can create the firestore database from the GCP Console UI (name: small-business-loan-states, type: native)
 
 ### Installation
 
@@ -297,8 +298,6 @@ GOOGLE_GENAI_USE_VERTEXAI=TRUE
 GOOGLE_CLOUD_PROJECT=your-project-id
 GOOGLE_CLOUD_LOCATION=global
 
-# Firestore
-GCP_FIRESTORE_DB=session-states
 
 ```
 
@@ -404,39 +403,39 @@ Our evaluation treats the multi-agent system as a complete pipeline, measuring i
 
 ### Test Cases
 
-| Test Case | Description | Turns |
-| --- | --- | --- |
-| `happy_path_with_approval` | Full end-to-end flow: submit complete PDF, process through all 4 sub-agents, user approves, loan decision finalized | 2 |
-| `stop_for_reparation_missing_fields` | Incomplete PDF (missing `loan_amount_requested`): agent stops after DocumentExtraction, reports missing fields, halts workflow | 1 |
-| `resume_after_repair` | Pre-repaired state in Firestore: agent detects completed DocumentExtraction, resumes from UnderwritingAgent, processes through Pricing | 1 |
+| Test Case                            | Description                                                                                                                            | Turns |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- | ----- |
+| `happy_path_with_approval`           | Full end-to-end flow: submit complete PDF, process through all 4 sub-agents, user approves, loan decision finalized                    | 2     |
+| `stop_for_reparation_missing_fields` | Incomplete PDF (missing `loan_amount_requested`): agent stops after DocumentExtraction, reports missing fields, halts workflow         | 1     |
+| `resume_after_repair`                | Pre-repaired state in Firestore: agent detects completed DocumentExtraction, resumes from UnderwritingAgent, processes through Pricing | 1     |
 
 ### Evaluation Criteria
 
-| Criterion | Purpose | Threshold | Reference Required |
-| --- | --- | --- | --- |
-| `rubric_based_tool_use_quality_v1` | Validates tool call ordering using LLM judge against rubrics | 0.8 | No |
-| `rubric_based_final_response_quality_v1` | Evaluates response completeness and clarity using LLM judge | 0.8 | No |
-| `final_response_match_v2` | Semantic equivalence of response to expected output (LLM-based) | 0.7 | Yes |
+| Criterion                                | Purpose                                                         | Threshold | Reference Required |
+| ---------------------------------------- | --------------------------------------------------------------- | --------- | ------------------ |
+| `rubric_based_tool_use_quality_v1`       | Validates tool call ordering using LLM judge against rubrics    | 0.8       | No                 |
+| `rubric_based_final_response_quality_v1` | Evaluates response completeness and clarity using LLM judge     | 0.8       | No                 |
+| `final_response_match_v2`                | Semantic equivalence of response to expected output (LLM-based) | 0.7       | Yes                |
 
 ### Key Metrics
 
 - **Routing Accuracy (Tool Use Rubrics)**: Did the orchestrator call sub-agents in the correct order? The following ordering rules are enforced:
 
-  | Rubric | Rule |
-  | --- | --- |
-  | `status_first` | `check_process_status` is called before any agent tools on the initial request |
-  | `extraction_before_underwriting` | `DocumentExtractionAgent` is called before `UnderwritingAgent` |
-  | `underwriting_before_pricing` | `UnderwritingAgent` is called before `PricingAgent` |
-  | `pricing_before_decision` | `PricingAgent` is called before `LoanDecisionAgent` |
-  | `approval_required` | `LoanDecisionAgent` is only called after user approval |
+  | Rubric                           | Rule                                                                           |
+  | -------------------------------- | ------------------------------------------------------------------------------ |
+  | `status_first`                   | `check_process_status` is called before any agent tools on the initial request |
+  | `extraction_before_underwriting` | `DocumentExtractionAgent` is called before `UnderwritingAgent`                 |
+  | `underwriting_before_pricing`    | `UnderwritingAgent` is called before `PricingAgent`                            |
+  | `pricing_before_decision`        | `PricingAgent` is called before `LoanDecisionAgent`                            |
+  | `approval_required`              | `LoanDecisionAgent` is only called after user approval                         |
 
 - **Response Quality (Final Response Rubrics)**: Is the agent's output complete and actionable?
 
-  | Rubric | Rule |
-  | --- | --- |
-  | `loan_summary_completeness` | Response includes business name, owner, loan amount, revenue, eligibility, risk tier, rate, and payment |
-  | `clear_next_step` | Response clearly indicates next action: approval prompt, completion confirmation, status report, or missing info request |
-  | `error_handling_clarity` | When data is missing or an error occurs, the response clearly identifies what is missing or wrong |
+  | Rubric                      | Rule                                                                                                                     |
+  | --------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+  | `loan_summary_completeness` | Response includes business name, owner, loan amount, revenue, eligibility, risk tier, rate, and payment                  |
+  | `clear_next_step`           | Response clearly indicates next action: approval prompt, completion confirmation, status report, or missing info request |
+  | `error_handling_clarity`    | When data is missing or an error occurs, the response clearly identifies what is missing or wrong                        |
 
 - **Semantic Response Match**: Does the agent's final response convey the same information as the expected reference response? Threshold set to 0.7 to account for natural LLM wording variation.
 
@@ -463,10 +462,13 @@ To implement evaluation for this agent:
 4. **For resume-after-repair test cases**, pre-populate Firestore with a repaired process state (DocumentExtractionAgent marked `completed` with filled-in data, `overall_status` set to `active`) before running the eval. The agent will then skip DocumentExtraction and resume from UnderwritingAgent.
 
 5. **Define expected tool sequences in `intermediate_data.tool_uses`.** For a complete application, the expected sequence is:
+
    ```
    check_process_status → DocumentExtractionAgent → UnderwritingAgent → PricingAgent
    ```
+
    For a second turn with user approval:
+
    ```
    LoanDecisionAgent
    ```
@@ -480,7 +482,7 @@ See [ADK Evaluation docs](https://google.github.io/adk-docs/evaluate/) and [Eval
 Use the [Agent Starter Pack](https://goo.gle/agent-starter-pack) to create a production-ready version of this agent with deployment options. Run this command from the root of the `adk-samples` repository:
 
 ```bash
-uvx agent-starter-pack create my-loan-agent -a local@python/agents/small-business-loan-agent
+uvx agent-starter-pack create my-loan-agent -a local@python/agents/small-business-loan-agent --auto-approve -o target
 ```
 
 <details>
@@ -489,44 +491,50 @@ uvx agent-starter-pack create my-loan-agent -a local@python/agents/small-busines
 ```bash
 python -m venv .venv && source .venv/bin/activate # On Windows: .venv\Scripts\activate
 pip install --upgrade agent-starter-pack
-agent-starter-pack create my-loan-agent -a local@python/agents/small-business-loan-agent
+agent-starter-pack create my-loan-agent -a local@python/agents/small-business-loan-agent --auto-approve -o target
 ```
 
 </details>
 
 The starter pack will prompt you to select deployment options and provides additional production-ready features including automated CI/CD deployment scripts.
 
-When deploying to Agent Engine, pass the required environment variables using `--set-env-vars` directly via the deploy script (the Makefile does not forward this flag):
+When deploying to Agent Engine, ensure your `.env` file is configured with required variables. You can then install, test, and deploy using the Makefile provided by the starter pack:
 
 ```bash
-cd my-loan-agent && \
-uv export --no-hashes --no-header --no-dev --no-emit-project --no-annotate > small_business_loan_agent/app_utils/.requirements.txt && \
-uv run -m small_business_loan_agent.app_utils.deploy \
-    --source-packages=./small_business_loan_agent \
-    --entrypoint-module=small_business_loan_agent.agent_engine_app \
-    --entrypoint-object=agent_engine \
-    --requirements-file=small_business_loan_agent/app_utils/.requirements.txt \
-    --set-env-vars="GCP_FIRESTORE_DB=session-states,GOOGLE_CLOUD_LOCATION=global"
+cd target/my-loan-agent && make install && make test && make deploy
 ```
 
-> **Note:** `GOOGLE_CLOUD_LOCATION=global` is required because the Gemini preview model used by this agent is only available in the `global` region, while Agent Engine deploys to a specific region (e.g., `us-central1`). The starter pack preserves this value for model calls.
-
-The service account running the agent must have access to Firestore. For example, if deploying on Agent Engine:
+The service account running the agent must have access to Firestore and GCS (if using GCS fallback cf below). For example, if deploying on Agent Engine:
 
 ```bash
 export PROJECT_ID=your-project-id
 export PROJECT_NUMBER=$(gcloud projects describe $PROJECT_ID --format='value(projectNumber)')
 
+# Grant Firestore access
 gcloud projects add-iam-policy-binding $PROJECT_ID \
   --member="serviceAccount:service-${PROJECT_NUMBER}@gcp-sa-aiplatform-re.iam.gserviceaccount.com" \
   --role="roles/datastore.owner" \
   --condition=None
+
+# Grant GCS access (Object Viewer is sufficient for reading)
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+  --member="serviceAccount:service-${PROJECT_NUMBER}@gcp-sa-aiplatform-re.iam.gserviceaccount.com" \
+  --role="roles/storage.objectViewer" \
+  --condition=None
 ```
 
-To register the agent to Gemini Enterprise, do this: 
+To register the agent to Gemini Enterprise, do this:
+
 ```bash
 uvx agent-starter-pack@latest register-gemini-enterprise
 ```
+
+Fallback if testing on Agent Engine Playground, use the GCS fallback feature (as file upload is not supported in the agent engine playground currently) to fetch the test files:
+
+1. Upload the 2 PDFs from the `data/sample_applications/` folder to a GCS bucket that you name `small-business-loan-data`.
+2. In the Playground UI, ask:  
+   "Process sample_application_complete.pdf from GCS for loan SBL-2025-43142".
+
 ## License
 
 Copyright 2026 Google LLC. Licensed under the Apache License, Version 2.0.
