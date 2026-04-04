@@ -78,11 +78,13 @@ async def _load_document_from_gcs(bucket_name: str, blob_name: str) -> bytes:
 
     # Run in thread executor as storage client is synchronous
     import asyncio
+
     def _download():
         client = storage.Client()
         bucket = client.bucket(bucket_name)
         blob = bucket.blob(blob_name)
         return blob.download_as_bytes()
+
     return await asyncio.to_thread(_download)
 
 
