@@ -1,9 +1,12 @@
 import os
+
 import dotenv
 from google.adk.agents import LlmAgent
 from google.adk.models import Gemini
+from google.adk.tools.mcp_tool.mcp_session_manager import (
+    StreamableHTTPConnectionParams,
+)
 from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset
-from google.adk.tools.mcp_tool.mcp_session_manager import StreamableHTTPConnectionParams 
 
 dotenv.load_dotenv()
 
@@ -22,31 +25,30 @@ Follow these 4 rigorous steps:
 Structure your response clearly and concisely. If the user provides a budget, ensure your suggestions align with it.
 """
 
-MAPS_MCP_URL = "https://mapstools.googleapis.com/mcp" 
+MAPS_MCP_URL = "https://mapstools.googleapis.com/mcp"
+
 
 def get_maps_mcp_toolset():
     dotenv.load_dotenv()
-    maps_api_key = os.getenv('MAPS_API_KEY')
+    maps_api_key = os.getenv("MAPS_API_KEY")
     if not maps_api_key:
         print("Warning: MAPS_API_KEY environment variable not found.")
         maps_api_key = "no_api_found"
-    
+
     tools = MCPToolset(
         connection_params=StreamableHTTPConnectionParams(
-            url=MAPS_MCP_URL,
-            headers={    
-                "X-Goog-Api-Key": maps_api_key
-            }
+            url=MAPS_MCP_URL, headers={"X-Goog-Api-Key": maps_api_key}
         )
     )
     print("Google Maps MCP Toolset configured.")
     return tools
 
+
 maps_toolset = get_maps_mcp_toolset()
 
 root_agent = LlmAgent(
     model=Gemini(model="gemma-4-31b-it"),
-    name='food_tour_agent',
+    name="food_tour_agent",
     instruction=system_instruction,
-    tools=[maps_toolset]
+    tools=[maps_toolset],
 )
