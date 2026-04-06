@@ -17,18 +17,13 @@
 import asyncio
 
 from absl import app, flags
-from dotenv import load_dotenv
 from google.adk import runners
-from google.adk.agents import llm_agent
 from google.genai import types
 
-from . import prompts, tools, util
+from . import util
+from .agent import root_agent
 from .plugins import agent_as_a_judge, model_armor
 
-# Load environment variables before loading the plugins.
-load_dotenv()
-
-Agent = llm_agent.LlmAgent
 LlmAsAJudge = agent_as_a_judge.LlmAsAJudge
 ModelArmorSafetyFilter = model_armor.ModelArmorSafetyFilterPlugin
 InMemoryRunner = runners.InMemoryRunner
@@ -36,22 +31,6 @@ InMemoryRunner = runners.InMemoryRunner
 
 USER_ID = "user"
 APP_NAME = "test_app_with_plugin"
-AGENT_MODEL = "gemini-2.5-flash"
-
-sub_agent = Agent(
-    model=AGENT_MODEL,
-    instruction=prompts.SUB_AGENT_SI,
-    name="sub_agent",
-    tools=[tools.fib_tool, tools.io_bound_tool],
-)
-
-root_agent = Agent(
-    model=AGENT_MODEL,
-    instruction=prompts.ROOT_AGENT_SI,
-    name="main_agent",
-    tools=[tools.short_sum_tool, tools.long_sum_tool],
-    sub_agents=[sub_agent],
-)
 
 # Define the command-line flag using absl.flags.
 FLAGS = flags.FLAGS

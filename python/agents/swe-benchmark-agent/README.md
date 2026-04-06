@@ -4,6 +4,8 @@
 
 This agent is designed to show the basic principles for tackling software engineering problems from two prominent benchmarks: SWE-bench and TerminalBench. It is not meant to be a production ready implementation.
 
+The [Agent Starter Pack](https://goo.gle/agent-starter-pack) (ASP) is the **recommended** way to create a new project from this sample: you get a production-oriented layout, deployment choices, and CI/CD scaffolding. The copy in [adk-samples](https://github.com/google/adk-samples) remains the upstream source for browsing and contributions.
+
 ## Agent Details
 
 | Feature | Description |
@@ -24,65 +26,100 @@ The SWE Benchmark Agent uses a sophisticated orchestrator pattern:
 
 The agent operates autonomously within the Docker environment, using shell commands and file operations to solve software engineering tasks.
 
-## Setup and Installation
+## Prerequisites
 
-1.  **Prerequisites**
+- Python 3.10+
+- [uv](https://docs.astral.sh/uv/getting-started/installation/)
+- **Google Cloud SDK (`gcloud`)** installed and authenticated (for Vertex / Gemini)
+- **Git**
+- **Docker** (for SWE-bench and TerminalBench evaluation via `swe_benchmark_agent.main`)
 
-    *   Python 3.10+
-    *   uv
-        *   For dependency management and packaging. Please follow the
-            instructions on the official
-            [uv website](https://docs.astral.sh/uv/) for installation.
+### Recommended: Using Agent Starter Pack
 
-        ```bash
-        curl -LsSf https://astral.sh/uv/install.sh | sh
-        ```
-
-    * A project on Google Cloud Platform
-    * Google Cloud CLI
-        *   For installation, please follow the instruction on the official
-            [Google Cloud website](https://cloud.google.com/sdk/docs/install).
-
-2.  **Installation**
-
-    ```bash
-    # Clone this repository.
-    git clone https://github.com/google/adk-samples.git
-    cd adk-samples/python/agents/swe-benchmark-agent
-    # Install the package and dependencies.
-    uv sync
-    ```
-
-3.  **Configuration**
-
-    *   Set up Google Cloud credentials.
-
-        *   You may set the following environment variables in your shell, or in
-            a `.env` file instead.
-
-        ```bash
-        export GOOGLE_GENAI_USE_VERTEXAI=true
-        export GOOGLE_CLOUD_PROJECT=<your-project-id>
-        export GOOGLE_CLOUD_LOCATION=<your-project-location>
-        ```
-
-
-## Running Tests
-
-For running tests and evaluation, install the extra dependencies:
+The Agent Starter Pack is the recommended way to create and deploy a production-ready version of this agent. Start from a new directory (replace `my-swe-agent` with your project name):
 
 ```bash
-uv sync --dev
+uvx agent-starter-pack create my-swe-agent -a adk@swe-benchmark-agent
+cd my-swe-agent
 ```
 
-Then the tests and evaluation can be run from the `swe-benchmark-agent` directory using
-the `pytest` module:
+Install dependencies (including dev tools for tests):
 
 ```bash
-uv run pytest tests
+uv sync --group dev
 ```
 
-## Running Evaluations
+Configure Google Cloud (environment variables or a `.env` file):
+
+```bash
+export GOOGLE_GENAI_USE_VERTEXAI=true
+export GOOGLE_CLOUD_PROJECT=<your-project-id>
+export GOOGLE_CLOUD_LOCATION=global
+```
+
+Authenticate:
+
+```bash
+gcloud auth application-default login
+gcloud auth application-default set-quota-project $GOOGLE_CLOUD_PROJECT
+```
+
+During setup, the starter pack will prompt you for deployment options and adds production-oriented tooling (for example automated CI/CD deployment scripts).
+
+<details>
+<summary>Alternative: install Agent Starter Pack with pip</summary>
+
+If you prefer not to use `uvx`, create a virtual environment and install the CLI:
+
+```bash
+python -m venv .venv && source .venv/bin/activate  # Windows: .venv\Scripts\activate
+pip install --upgrade agent-starter-pack
+agent-starter-pack create my-swe-agent -a adk@swe-benchmark-agent
+cd my-swe-agent
+```
+
+Then continue with `uv sync --group dev` and the configuration steps above.
+
+</details>
+
+<details>
+<summary>Clone this repository directly (contributors and advanced use)</summary>
+
+Use this workflow when working against the upstream repository (for example to open a pull request). **New projects should still use the Agent Starter Pack** as described above.
+
+```bash
+git clone https://github.com/google/adk-samples.git
+cd adk-samples/python/agents/swe-benchmark-agent
+uv sync --group dev
+```
+
+Set the same `GOOGLE_*` environment variables and run `gcloud auth application-default login` as in the recommended path. Running the agent, tests, and evaluations uses the same commands as below.
+
+</details>
+
+## Running the Agent
+
+Talk to the sample agent with the ADK CLI:
+
+```bash
+uv run adk run swe_benchmark_agent
+```
+
+Or use the web UI:
+
+```bash
+uv run adk web
+```
+
+Select **swe_benchmark_agent** in the UI if prompted. The interactive agent explains how to run full benchmark evaluations; those use Docker via `swe_benchmark_agent.main` (see [Running evaluations](#running-evaluations)).
+
+## Running tests
+
+```bash
+uv run pytest tests -v
+```
+
+## Running evaluations
 
 The SWE Agent can be evaluated on both SWE-bench and TerminalBench benchmarks to measure its performance on real-world software engineering tasks.
 
@@ -130,6 +167,6 @@ uv run python -m swe_benchmark_agent.main --dataset terminalbench --instance-id-
 
 The SWE Agent can be customized to better suit your requirements. For example:
 
- 1. **Use a different model:** You can change the model used by the agent by modifying the `main.py` file.
- 2. **Add more tools:** You can add more tools to the agent to give it more capabilities.
- 3. **Support more benchmarks:** You can add support for more benchmarks by creating a new environment and updating the `main.py` file.
+ 1. **Use a different model:** Adjust the model in `swe_benchmark_agent/main.py` (benchmark orchestration) or `swe_benchmark_agent/agent.py` (interactive `adk run` entry point).
+ 2. **Add more tools:** Add tools to the agent to give it more capabilities.
+ 3. **Support more benchmarks:** Add support for more benchmarks by creating a new environment and updating `swe_benchmark_agent/main.py`.

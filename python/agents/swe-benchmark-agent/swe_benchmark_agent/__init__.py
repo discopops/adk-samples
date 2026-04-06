@@ -18,4 +18,15 @@ This package provides a sophisticated agent for solving software engineering
 tasks from SWE-bench and Terminal-Bench benchmarks using Google ADK.
 """
 
+import os
+
+import google.auth
+
+_, project_id = google.auth.default()
+os.environ.setdefault("GOOGLE_CLOUD_PROJECT", project_id)
+os.environ.setdefault("GOOGLE_CLOUD_LOCATION", "global")
+os.environ.setdefault("GOOGLE_GENAI_USE_VERTEXAI", "True")
+
 __version__ = "0.1.0"
+
+from . import agent  # noqa: E402

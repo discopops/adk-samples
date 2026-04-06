@@ -1,7 +1,7 @@
 [project]
 name = "tau2-benchmark-agent"
 version = "0.1.0"
-description = "ADK Agent for Tau-Bench using vendored local source"
+description = "ADK Agent for Tau2-Bench benchmark evaluation using Google ADK"
 authors = [{ name = "Google ADK Team", email = "no-reply@google.com" }]
 license = {text = "Apache License 2.0"}
 readme = "README.md"
@@ -16,14 +16,18 @@ dependencies = [
 ]
 
 [tool.uv.sources]
-# This tells uv to use the local folder instead of looking on PyPI or GitHub
-tau2 = { path = "./vendor/tau2" }
+tau2 = { git = "https://github.com/sierra-research/tau2-bench.git", rev = "cc97b34" }
 
 [dependency-groups]
 dev = [
     "pytest>=8.0.0",
     "pytest-asyncio>=0.23.0",
+    "agent-starter-pack>=0.32.0",
 ]
+
+[tool.pytest.ini_options]
+pythonpath = "."
+asyncio_default_fixture_loop_scope = "function"
 
 [tool.ruff]
 extend = "../../../pyproject.toml"
@@ -33,6 +37,12 @@ known-first-party = ["tau2_agent"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["tau2_agent"]
+
+[tool.agent-starter-pack]
+example_question = "Can you run the tau2-bench evaluation on the airline domain?"
+
+[tool.agent-starter-pack.settings]
+agent_directory = "tau2_agent"
 
 [build-system]
 requires = ["hatchling"]

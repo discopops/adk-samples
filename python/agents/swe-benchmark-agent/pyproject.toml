@@ -26,7 +26,8 @@ dependencies = [
     "google-adk>=1.15.1",
     "pyyaml>=6.0.2",
     "python-dotenv>=1.0.1",
-    "google-genai==1.36.0",
+    "google-genai>=1.59.0",
+    "agent-starter-pack>=0.32.0",
 ]
 
 [dependency-groups]
@@ -62,6 +63,12 @@ packages = ["swe_benchmark_agent"]
 [tool.pytest.ini_options]
 pythonpath = "."
 asyncio_default_fixture_loop_scope = "function"
+
+[tool.agent-starter-pack]
+example_question = "How do I run SWE-bench evaluations with this agent?"
+
+[tool.agent-starter-pack.settings]
+agent_directory = "swe_benchmark_agent"
 
 [build-system]
 requires = ["hatchling"]

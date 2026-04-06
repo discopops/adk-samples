@@ -1,22 +1,30 @@
+import importlib.util
 import sys
+from pathlib import Path
 
 import pytest
 import tau2.agent
 
-try:
-    from tau2_agent import adk_agent
-except ImportError:
-    # Fallback: try to import from relative path if installed as editable but path issues
-    import os
 
-    # Assuming this conftest is in tests/ and tau2_agent is in ../tau2_agent/
-    project_root = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), "..")
+def _load_adk_agent():
+    """Load tau2_agent.adk_agent without importing tau2_agent.__init__ (ADC setup)."""
+    project_root = Path(__file__).resolve().parent.parent
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
+    adk_path = project_root / "tau2_agent" / "adk_agent.py"
+    spec = importlib.util.spec_from_file_location(
+        "tau2_agent.adk_agent", adk_path
     )
-    if project_root not in sys.path:
-        sys.path.insert(0, project_root)
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules["tau2_agent.adk_agent"] = mod
+    loader = spec.loader
+    if loader is None:
+        raise ImportError(f"Cannot load module from {adk_path}")
+    loader.exec_module(mod)
+    return mod
 
-    from tau2_agent import adk_agent
+
+adk_agent = _load_adk_agent()
 
 # Inject the local adk_agent module into the tau2.agent namespace
 # This allows 'from tau2.agent.adk_agent import AdkAgent' to work

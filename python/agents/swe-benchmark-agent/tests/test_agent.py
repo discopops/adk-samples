@@ -15,8 +15,12 @@
 """Integration tests for SWE Agent."""
 
 import unittest
+from typing import Any
 
-from swe_agent.orchestrator import Orchestrator
+from swe_benchmark_agent.orchestrator import (
+    MAX_VERIFICATION_TURN_COUNT,
+    Orchestrator,
+)
 
 
 class MockEnvironment:

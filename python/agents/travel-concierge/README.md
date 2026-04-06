@@ -4,6 +4,8 @@ This sample demonstrates the use of Agent Development Kit to deliver a new user 
 
 This example includes illustrations with ADK supported tools such as Google Places API, Google Search Grounding and MCP.
 
+The [Agent Starter Pack](https://goo.gle/agent-starter-pack) (ASP) is the **recommended** way to create a new project from this sample. The copy in [adk-samples](https://github.com/google/adk-samples) remains the upstream source for browsing and contributions.
+
 ## Overview
 
 A traveler's experience can be divided into two stages: pre-booking and post-booking. In this example, each stage involves the use of multiple specialized agents working together to provide the concierge experience.
@@ -63,9 +65,85 @@ Expand on the "Key Components" from above.
     * The session state is used to store information such as the itinerary, and temporary AgentTools' responses.
     * There are a number of premade itineraries that can be loaded for test runs. See 'Running the Agent' below on how to run them.
 
-## Setup and Installation
+## Prerequisites
+
+- Python 3.11+
+- Google Cloud project (for Vertex AI)
+- API key for [Google Maps Platform Places API](https://developers.google.com/maps/documentation/places/web-service/get-api-key)
+- [uv](https://docs.astral.sh/uv/getting-started/installation/)
+- Google Agent Development Kit 1.0+
+
+### Recommended: Using Agent Starter Pack
+
+The Agent Starter Pack is the recommended way to create and deploy a production-ready version of this agent. Start from a new directory (replace `my-travel-concierge` with your project name):
+
+```bash
+uvx agent-starter-pack create my-travel-concierge -a adk@travel-concierge
+cd my-travel-concierge
+```
+
+Install dependencies (including dev tools for tests and evaluation):
+
+```bash
+uv sync --group dev
+```
+
+Configure the environment. At the project root, copy `.env.example` to `.env` and set variables. To use Vertex, enable the Vertex AI API in your project. Example:
+
+```
+# Choose Model Backend: 0 -> ML Dev, 1 -> Vertex
+GOOGLE_GENAI_USE_VERTEXAI=1
+# ML Dev backend config, when GOOGLE_GENAI_USE_VERTEXAI=0, ignore if using Vertex.
+# GOOGLE_API_KEY=YOUR_VALUE_HERE
+
+# Vertex backend config
+GOOGLE_CLOUD_PROJECT=__YOUR_CLOUD_PROJECT_ID__
+GOOGLE_CLOUD_LOCATION=us-central1
+
+# Places API
+GOOGLE_PLACES_API_KEY=__YOUR_API_KEY_HERE__
+
+# GCS Storage Bucket name - for Agent Engine deployment test
+GOOGLE_CLOUD_STORAGE_BUCKET=YOUR_BUCKET_NAME_HERE
+
+# Sample Scenario Path - Default is an empty itinerary
+# This will be loaded upon first user interaction.
+#
+# Uncomment one of the two, or create your own.
+#
+# TRAVEL_CONCIERGE_SCENARIO=travel_concierge/profiles/itinerary_seattle_example.json
+TRAVEL_CONCIERGE_SCENARIO=travel_concierge/profiles/itinerary_empty_default.json
+```
+
+Authenticate:
+
+```bash
+gcloud auth application-default login
+```
+
+During setup, the starter pack will prompt you for deployment options and adds production-oriented tooling (for example automated CI/CD deployment scripts).
+
+<details>
+<summary>Alternative: install Agent Starter Pack with pip</summary>
+
+```bash
+python -m venv .venv && source .venv/bin/activate  # Windows: .venv\Scripts\activate
+pip install --upgrade agent-starter-pack
+agent-starter-pack create my-travel-concierge -a adk@travel-concierge
+cd my-travel-concierge
+```
+
+Then continue with `uv sync --group dev` and the configuration steps above.
+
+</details>
+
+<details>
+<summary>Clone this repository directly (contributors and advanced use)</summary>
+
+**New projects should still use the Agent Starter Pack** as described above.
 
 ### Folder Structure
+
 ```
 .
 ├── README.md
@@ -88,75 +166,40 @@ Expand on the "Key Components" from above.
 └── deployment/
 ```
 
-### Prerequisites
+### Additional prerequisites (clone path)
 
-- Python 3.10+
-- Google Cloud Project (for Vertex AI integration)
-- API Key for [Google Maps Platform Places API](https://developers.google.com/maps/documentation/places/web-service/get-api-key)
-- Google Agent Development Kit 1.0+
-- uv: Install uv by following the instructions on the official uv [website](https://docs.astral.sh/uv/)
+- Install uv: [uv website](https://docs.astral.sh/uv/)
+
   ```bash
   curl -LsSf https://astral.sh/uv/install.sh | sh
   ```
 
 ### Installation
 
-1.  Clone the repository:
+1. Clone the repository:
 
-    ```bash
-    git clone https://github.com/google/adk-samples.git
-    cd adk-samples/python/agents/travel-concierge
-    ```
-    NOTE: From here on, all command-line instructions shall be executed under the directory  `travel-concierge/` unless otherwise stated.
+   ```bash
+   git clone https://github.com/google/adk-samples.git
+   cd adk-samples/python/agents/travel-concierge
+   ```
 
-2.  Install dependencies:
+   From here on, run commands under `travel-concierge/` unless stated otherwise.
 
-    ```bash
-    uv sync
-    ```
+2. Install dependencies:
 
-3.  Set up Google Cloud credentials:
+   ```bash
+   uv sync --group dev
+   ```
 
-    Otherwise:
-    - At the top directory `travel-concierge/`, make a `.env` by copying `.env.example`
-    - Set the following environment variables.
-    - To use Vertex, make sure you have the Vertex AI API enabled in your project.
-    ```
-    # Choose Model Backend: 0 -> ML Dev, 1 -> Vertex
-    GOOGLE_GENAI_USE_VERTEXAI=1
-    # ML Dev backend config, when GOOGLE_GENAI_USE_VERTEXAI=0, ignore if using Vertex.
-    # GOOGLE_API_KEY=YOUR_VALUE_HERE
+3. Set up `.env` as in the recommended path (copy `.env.example` and fill in variables).
 
-    # Vertex backend config
-    GOOGLE_CLOUD_PROJECT=__YOUR_CLOUD_PROJECT_ID__
-    GOOGLE_CLOUD_LOCATION=us-central1
+4. Authenticate:
 
-    # Places API
-    GOOGLE_PLACES_API_KEY=__YOUR_API_KEY_HERE__
+   ```bash
+   gcloud auth application-default login
+   ```
 
-    # GCS Storage Bucket name - for Agent Engine deployment test
-    GOOGLE_CLOUD_STORAGE_BUCKET=YOUR_BUCKET_NAME_HERE
-
-    # Sample Scenario Path - Default is an empty itinerary
-    # This will be loaded upon first user interaction.
-    #
-    # Uncomment one of the two, or create your own.
-    #
-    # TRAVEL_CONCIERGE_SCENARIO=travel_concierge/profiles/itinerary_seattle_example.json
-    TRAVEL_CONCIERGE_SCENARIO=travel_concierge/profiles/itinerary_empty_default.json
-    ```
-
-4. Authenticate your GCloud account.
-    ```bash
-    gcloud auth application-default login
-    ```
-
-5. Activate the virtual environment set up by Poetry, run:
-    ```bash
-    eval $(poetry env activate)
-    (travel-concierge-py3.12) $ # Virtualenv entered
-    ```
-    Repeat this command whenever you have a new shell, before running the commands in this README.
+</details>
 
 ## Running the Agent
 
@@ -166,14 +209,12 @@ ADK provides convenient ways to bring up agents locally and interact with them.
 You may talk to the agent using the CLI:
 
 ```bash
-# Under the travel-concierge directory:
-adk run travel_concierge
+uv run adk run travel_concierge
 ```
 
 or via its web interface:
 ```bash
-# Under the travel-concierge directory:
-adk web
+uv run adk web
 ```
 
 This will start a local web server on your machine. You may open the URL, select "travel_concierge" in the top-left drop-down menu, and
@@ -226,7 +267,7 @@ Without specifically optimizing for such usage, this cohort of agents seem to be
 To run the illustrative tests and evaluations, install the extra dependencies and run `pytest`:
 
 ```bash
-uv sync --dev
+uv sync --group dev
 uv run pytest
 ```
 
@@ -267,32 +308,6 @@ To delete the agent, run the following command (using the resource ID returned p
 ```bash
 uv run python deployment/deploy.py --delete --resource_id=<RESOURCE_ID>
 ```
-
-### Alternative: Using Agent Starter Pack
-
-You can also use the [Agent Starter Pack](https://goo.gle/agent-starter-pack) to create a production-ready version of this agent with additional deployment options:
-
-```bash
-# Create and activate a virtual environment
-python -m venv .venv && source .venv/bin/activate # On Windows: .venv\Scripts\activate
-
-# Install the starter pack and create your project
-pip install --upgrade agent-starter-pack
-agent-starter-pack create my-travel-concierge -a adk@travel-concierge
-```
-
-<details>
-<summary>⚡️ Alternative: Using uv</summary>
-
-If you have [`uv`](https://github.com/astral-sh/uv) installed, you can create and set up your project with a single command:
-```bash
-uvx agent-starter-pack create my-travel-concierge -a adk@travel-concierge
-```
-This command handles creating the project without needing to pre-install the package into a virtual environment.
-
-</details>
-
-The starter pack will prompt you to select deployment options and provides additional production-ready features including automated CI/CD deployment scripts.
 
 ## Application Development
 
